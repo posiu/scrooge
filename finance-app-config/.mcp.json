@@ -1,0 +1,38 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/TWOJ_USERNAME/scrooge"
+      ],
+      "description": "Dostęp do plików projektu — potrzebny do importu Excela i odczytu konfiguracji"
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "--db-path",
+        "./finance.db"
+      ],
+      "description": "Bezpośredni dostęp do bazy SQLite — odpytywanie i analiza danych przez Claude"
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// INSTRUKCJA AKTYWACJI (wykonaj te komendy w terminalu):
+//
+// 1. Filesystem MCP:
+//    claude mcp add filesystem -- npx -y @modelcontextprotocol/server-filesystem /Users/TWOJ_USERNAME/scrooge
+//
+// 2. SQLite MCP:
+//    claude mcp add sqlite -- npx -y @modelcontextprotocol/server-sqlite --db-path ./finance.db
+//
+// 3. Sprawdź listę aktywnych MCP:
+//    claude mcp list
+//
+// UWAGA: Zamień TWOJ_USERNAME na swój username macOS (sprawdź: whoami)
+// ─────────────────────────────────────────────────────────────

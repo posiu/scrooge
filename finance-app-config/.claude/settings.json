@@ -1,0 +1,87 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(cp finance.db *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(git status)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(DROP TABLE *)",
+      "Bash(DELETE FROM * WHERE 1=1)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)"
+    ]
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "description": "Blokuj niebezpieczne operacje na bazie danych",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-database.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "description": "Backup przed migracją",
+        "matcher": "Bash(npm run db:migrate*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/backup-before-migrate.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "description": "TypeScript check po zmianach w plikach TS",
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/typecheck-on-save.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "description": "Podsumowanie zmian po zakończeniu zadania",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-summary.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+
+  "env": {
+    "NODE_ENV": "development",
+    "DB_PATH": "./finance.db",
+    "API_PORT": "3001",
+    "FRONTEND_PORT": "5173"
+  }
+}
