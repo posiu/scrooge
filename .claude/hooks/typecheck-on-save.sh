@@ -3,7 +3,7 @@
 # Uruchamia TypeScript check po zapisaniu pliku .ts/.tsx
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('path',''))" 2>/dev/null)
+FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" 2>/dev/null)
 
 # Sprawdź tylko pliki TS/TSX
 if [[ "$FILE_PATH" != *.ts && "$FILE_PATH" != *.tsx ]]; then
@@ -20,8 +20,9 @@ else
 fi
 
 # Uruchom tsc --noEmit (tylko sprawdzenie typów, bez buildu)
-if [ -f "$DIR/tsconfig.json" ]; then
-  cd "$DIR"
+PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+if [ -f "$PROJECT_ROOT/$DIR/tsconfig.json" ]; then
+  cd "$PROJECT_ROOT/$DIR"
   RESULT=$(npx tsc --noEmit 2>&1)
   if [ $? -ne 0 ]; then
     echo "⚠️ TypeScript errors w $DIR:" >&2

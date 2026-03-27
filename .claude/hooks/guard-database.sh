@@ -19,7 +19,7 @@ DANGEROUS_PATTERNS=(
 
 for pattern in "${DANGEROUS_PATTERNS[@]}"; do
   if echo "$COMMAND" | grep -qi "$pattern"; then
-    echo "{\"block\": true, \"message\": \"🛡️ ZABLOKOWANO: Komenda zawiera destruktywną operację SQL: '$pattern'. Jeśli to zamierzone, wykonaj ręcznie po backupie bazy.\"}" >&2
+    echo "{\"decision\": \"block\", \"reason\": \"🛡️ ZABLOKOWANO: Komenda zawiera destruktywną operację SQL: '$pattern'. Jeśli to zamierzone, wykonaj ręcznie po backupie bazy.\"}"
     exit 2
   fi
 done

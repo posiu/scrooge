@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1774615502242,
+      "tag": "0000_youthful_lady_vermin",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774618426504,
+      "tag": "0001_add_institution_to_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774618699455,
+      "tag": "0002_add_transactions",
+      "breakpoints": true
+    }
+  ]
+}
