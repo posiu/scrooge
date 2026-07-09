@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode — white & green */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+
+    /* Primary = brand green #01581E */
+    --primary: 142 98% 18%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 20% 95%;
+    --secondary-foreground: 142 98% 15%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 142 30% 93%;
+    --accent-foreground: 142 98% 18%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --ring: 142 98% 18%;
+
+    --radius: 0.625rem;
+
+    /* Charts */
+    --chart-1: 142 98% 18%;  /* green */
+    --chart-2: 142 60% 45%;  /* lighter green */
+    --chart-3: 50 98% 52%;   /* amber */
+    --chart-4: 0 72% 51%;    /* red */
+    --chart-5: 217 91% 60%;  /* blue */
+
+    /* Sidebar */
+    --sidebar-background: 142 98% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 142 98% 8%;
+    --sidebar-accent: 142 98% 14%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 142 98% 14%;
+    --sidebar-ring: 142 60% 45%;
+  }
+
+  .dark {
+    /* Dark mode — black & green */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Primary = slightly lighter green for dark bg contrast */
+    --primary: 142 98% 35%;
+    --primary-foreground: 0 0% 3%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent: 142 30% 12%;
+    --accent-foreground: 142 70% 60%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 13%;
+    --input: 0 0% 13%;
+    --ring: 142 98% 35%;
+
+    /* Charts — slightly lighter in dark mode */
+    --chart-1: 142 70% 45%;
+    --chart-2: 142 50% 60%;
+    --chart-3: 50 90% 60%;
+    --chart-4: 0 65% 55%;
+    --chart-5: 217 80% 65%;
+
+    /* Sidebar (dark) — very dark green */
+    --sidebar-background: 142 98% 4%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 142 70% 45%;
+    --sidebar-primary-foreground: 0 0% 3%;
+    --sidebar-accent: 142 98% 8%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 142 60% 8%;
+    --sidebar-ring: 142 70% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer utilities {
+  /* Money amount formatting */
+  .amount-positive {
+    @apply text-green-700 dark:text-green-400;
+  }
+
+  .amount-negative {
+    @apply text-destructive;
+  }
+
+  .amount-neutral {
+    @apply text-muted-foreground;
+  }
+
+  /* Sidebar width */
+  .sidebar-width {
+    width: 260px;
+    min-width: 260px;
+  }
+
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-white/80 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10;
+  }
+}

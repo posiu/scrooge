@@ -10,22 +10,18 @@ if [[ "$FILE_PATH" != *.ts && "$FILE_PATH" != *.tsx ]]; then
   exit 0
 fi
 
-# Określ czy to backend czy frontend
-if [[ "$FILE_PATH" == *"/backend/"* ]]; then
-  DIR="backend"
-elif [[ "$FILE_PATH" == *"/frontend/"* ]]; then
-  DIR="frontend"
-else
+# Sprawdź czy plik należy do katalogu web/
+if [[ "$FILE_PATH" != *"/web/"* ]]; then
   exit 0
 fi
 
 # Uruchom tsc --noEmit (tylko sprawdzenie typów, bez buildu)
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-if [ -f "$PROJECT_ROOT/$DIR/tsconfig.json" ]; then
-  cd "$PROJECT_ROOT/$DIR"
+if [ -f "$PROJECT_ROOT/web/tsconfig.json" ]; then
+  cd "$PROJECT_ROOT/web"
   RESULT=$(npx tsc --noEmit 2>&1)
   if [ $? -ne 0 ]; then
-    echo "⚠️ TypeScript errors w $DIR:" >&2
+    echo "⚠️ TypeScript errors w web/:" >&2
     echo "$RESULT" | head -20 >&2
   fi
 fi

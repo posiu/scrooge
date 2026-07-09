@@ -33,32 +33,47 @@ BILANS                  +1790
 - ❌ `> 120%` — przekroczenie wymaga uwagi
 - 🔵 brak budżetu — nie planowane
 
-### SQL query (Drizzle)
+### Drizzle query (PostgreSQL)
 
 ```typescript
-// Transakcje w miesiącu per kategoria
+import { db } from '@/lib/db'
+import { transactions, categories, budgets } from '@/lib/db/schema'
+import { eq, and, gte, lte, isNull, sum } from 'drizzle-orm'
+
+const [y, m] = month.split('-').map(Number)
+const monthStart = new Date(y, m - 1, 1)
+const monthEnd   = new Date(y, m, 0, 23, 59, 59, 999)
+
+// Rzeczywiste wydatki per kategoria
 const actuals = await db
   .select({
     categoryId: transactions.categoryId,
     categoryName: categories.name,
-    total: sql<number>`sum(${transactions.amount})`
+    total: sum(transactions.amount),
   })
   .from(transactions)
   .leftJoin(categories, eq(transactions.categoryId, categories.id))
   .where(
     and(
-      sql`strftime('%Y-%m', ${transactions.date}) = ${month}`,
+      eq(transactions.userId, userId),
       eq(transactions.type, 'expense'),
-      isNull(transactions.deletedAt)
+      gte(transactions.date, monthStart),
+      lte(transactions.date, monthEnd),
+      isNull(transactions.deletedAt),        // zawsze filtruj soft delete!
     )
   )
-  .groupBy(transactions.categoryId)
+  .groupBy(transactions.categoryId, categories.name)
 
-// Budżety na miesiąc
-const budgets = await db
-  .select()
-  .from(monthlyBudgets)
-  .where(eq(monthlyBudgets.month, month))
+// Budżety na miesiąc (tabela: budgets, kolumna: month = 'YYYY-MM')
+const monthBudgets = await db.query.budgets.findMany({
+  where: and(eq(budgets.userId, userId), eq(budgets.month, month)),
+  with: { category: true },
+})
+
+// Kwoty z numeric są stringami — parseFloat przed arytmetyką
+const actualsMap = Object.fromEntries(
+  actuals.map(a => [a.categoryId, parseFloat(a.total ?? '0')])
+)
 ```
 
 ### Zasady wyświetlania

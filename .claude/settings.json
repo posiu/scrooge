@@ -4,7 +4,6 @@
       "Bash(npm run *)",
       "Bash(npx *)",
       "Bash(node *)",
-      "Bash(cp finance.db *)",
       "Bash(ls *)",
       "Bash(cat *)",
       "Bash(mkdir *)",
@@ -38,7 +37,7 @@
         ]
       },
       {
-        "description": "Backup przed migracją",
+        "description": "Przypomnienie o backupie przed migracją",
         "matcher": "Bash(npm run db:migrate*)",
         "hooks": [
           {
@@ -79,9 +78,6 @@
   },
 
   "env": {
-    "NODE_ENV": "development",
-    "DB_PATH": "./finance.db",
-    "API_PORT": "3001",
-    "FRONTEND_PORT": "5173"
+    "NEXT_APP_PORT": "3000"
   }
 }
