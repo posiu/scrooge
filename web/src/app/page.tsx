@@ -1,18 +1,19 @@
 import Link from 'next/link';
 import {
   TrendingUp,
+  TrendingDown,
   BarChart3,
   Brain,
   ShieldCheck,
-  Smartphone,
+  FileStack,
   PieChart,
-  Calendar,
   Target,
+  Gavel,
+  Download,
   ArrowRight,
   CheckCircle2,
   Zap,
-  GitBranch,
-  MessageSquare,
+  Tag,
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -30,10 +31,10 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-4">
               <Link
-                href="/roadmap"
+                href="/pricing"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
               >
-                Roadmap
+                Cennik
               </Link>
               <Link
                 href="/login"
@@ -62,9 +63,9 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-            Scrooge to aplikacja do zarządzania domowym budżetem zainspirowana metodą
-            Michała Szafrańskiego. Budżet vs. realizacja, trendy, AI asystent —
-            wszystko w jednym miejscu, bezpieczne i prywatne.
+            Scrooge to aplikacja do zarządzania domowym budżetem. Budżet vs.
+            realizacja, trendy, zobowiązania, podatki, cele oszczędnościowe,
+            AI asystent — wszystko w jednym miejscu, bezpieczne i prywatne.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -76,11 +77,11 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/roadmap"
+              href="/pricing"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors"
             >
-              <GitBranch className="w-4 h-4" />
-              Zobacz roadmapę
+              <Tag className="w-4 h-4" />
+              Cennik
             </Link>
           </div>
         </div>
@@ -106,7 +107,7 @@ export default function LandingPage() {
               {/* Sidebar */}
               <div className="w-14 sm:w-48 bg-[#01581E] p-3 sm:p-4 shrink-0">
                 <div className="space-y-1 mt-4">
-                  {['Dashboard', 'Transakcje', 'Budżet', 'Konta', 'Wykresy', 'AI Chat'].map((item) => (
+                  {['Dashboard', 'Transakcje', 'Budżet', 'Konta', 'Zobowiązania', 'Wykresy', 'Trendy', 'AI Asystent'].map((item) => (
                     <div
                       key={item}
                       className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 text-xs hover:bg-white/10 cursor-pointer"
@@ -120,20 +121,31 @@ export default function LandingPage() {
               {/* Content */}
               <div className="flex-1 p-4 sm:p-6 bg-background">
                 {/* Stats row */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="grid grid-cols-4 gap-3 mb-4">
                   {[
-                    { label: 'Przychody', value: '8 200 zł', color: 'text-[#01581E]' },
-                    { label: 'Wydatki', value: '5 430 zł', color: 'text-destructive' },
-                    { label: 'Oszczędności', value: '2 770 zł', color: 'text-blue-500' },
+                    { label: 'Przychody', value: '8 200 zł', color: 'text-[#01581E]', icon: TrendingUp },
+                    { label: 'Wydatki', value: '5 430 zł', color: 'text-destructive', icon: TrendingDown },
+                    { label: 'Oszczędności', value: '2 770 zł', color: 'text-blue-500', icon: Target },
+                    { label: 'Zobowiązania', value: '3 aktywne', color: 'text-amber-500', icon: Gavel },
                   ].map((stat) => (
                     <div key={stat.label} className="bg-card border border-border rounded-xl p-3">
-                      <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
-                      <p className={`text-sm sm:text-base font-bold ${stat.color}`}>{stat.value}</p>
+                      <p className="text-xs text-muted-foreground mb-1 truncate">{stat.label}</p>
+                      <p className={`text-xs sm:text-sm font-bold ${stat.color}`}>{stat.value}</p>
                     </div>
                   ))}
                 </div>
+                {/* Budget progress */}
+                <div className="bg-card border border-border rounded-xl p-3 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-muted-foreground">Realizacja budżetu</p>
+                    <p className="text-xs text-muted-foreground">72%</p>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full w-[72%] rounded-full bg-[#01581E]" />
+                  </div>
+                </div>
                 {/* Chart placeholder */}
-                <div className="h-24 sm:h-36 bg-muted/30 rounded-xl border border-border flex items-center justify-center">
+                <div className="h-16 sm:h-24 bg-muted/30 rounded-xl border border-border flex items-center justify-center">
                   <BarChart3 className="w-8 h-8 text-muted-foreground/40" />
                 </div>
               </div>
@@ -150,8 +162,8 @@ export default function LandingPage() {
               Wszystko czego potrzebujesz
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Zainspirowany arkuszem Michała Szafrańskiego, przeprojektowany
-              jako nowoczesna aplikacja webowa.
+              Wiele lat prowadzenia arkuszy excel z budżetem domowym,
+              przeprojektowane jako nowoczesna aplikacja webowa.
             </p>
           </div>
 
@@ -249,8 +261,8 @@ export default function LandingPage() {
             <span className="text-sm font-medium text-foreground">Scrooge</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/roadmap" className="hover:text-foreground transition-colors">
-              Roadmap
+            <Link href="/pricing" className="hover:text-foreground transition-colors">
+              Cennik
             </Link>
             <span>Domowy Controlling · {new Date().getFullYear()}</span>
           </div>
@@ -274,46 +286,46 @@ const features = [
       'Pytaj o swoje finanse w naturalnym języku. Podpinasz dowolny model LLM — OpenAI, Anthropic, Google lub własny.',
   },
   {
+    icon: Gavel,
+    title: 'Zobowiązania, Podatki i Egzekucje',
+    description:
+      'Śledź kredyty, raty i subskrypcje, rozliczenia podatkowe oraz zajęcia egzekucyjne — wszystko w jednym miejscu.',
+  },
+  {
+    icon: Target,
+    title: 'Cele Oszczędnościowe',
+    description:
+      'Wyznaczaj cele finansowe i monitoruj postęp w ich realizacji na bieżąco.',
+  },
+  {
     icon: TrendingUp,
     title: 'Analiza Trendów',
     description:
       'Wykrywaj wzorce wydatków w skali miesięcy i lat. Prognozy oparte na rzeczywistych danych — do 10 lat historii.',
   },
   {
-    icon: Calendar,
-    title: 'Polskie Święta i Kalendarz',
-    description:
-      'Automatyczne oznaczanie świąt i dni wolnych. Planowanie budżetu uwzględniające specyfikę polskiego kalendarza.',
-  },
-  {
     icon: PieChart,
-    title: 'Interaktywne Wykresy',
+    title: 'Interaktywne Wykresy i Raporty',
     description:
-      'Predefiniowane wykresy: struktura kosztów, przychody, przekroczenia. Możliwość tworzenia własnych raportów.',
+      'Predefiniowane wykresy: struktura kosztów, przychody, przekroczenia. Eksport danych do dalszej analizy.',
   },
   {
-    icon: Target,
+    icon: Download,
+    title: 'Import Danych z Excela',
+    description:
+      'Zaimportuj historię transakcji z arkusza Excel. Deduplikacja i podgląd przed zapisem do bazy.',
+  },
+  {
+    icon: FileStack,
     title: 'Szablony Budżetów',
     description:
       'Twórz szablony i generuj na ich podstawie plany na kolejne miesiące i lata. Hierarchiczne kategorie.',
-  },
-  {
-    icon: Smartphone,
-    title: 'Działa Wszędzie',
-    description:
-      'Responsywny design — MacBook, iPhone, iPad. Jedno konto, dostęp z każdego urządzenia.',
   },
   {
     icon: ShieldCheck,
     title: 'Bezpieczeństwo',
     description:
       'Logowanie bez hasła (OTP), Row Level Security w Supabase. Twoje dane są widoczne tylko dla Ciebie.',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Publiczne Roadmap',
-    description:
-      'Zgłaszaj pomysły, głosuj na funkcje innych użytkowników i śledź postęp ich realizacji.',
   },
 ];
 
