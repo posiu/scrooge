@@ -57,6 +57,7 @@ export default function EnforcementPage() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editTarget, setEditTarget] = useState<Proceeding | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPayForm, setShowPayForm] = useState<string | null>(null);
   const [payAmount, setPayAmount] = useState('');
@@ -80,22 +81,59 @@ export default function EnforcementPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  function openAdd() {
+    setEditTarget(null);
+    setForm({
+      creditor: '', enforcementAuthority: '', caseNumber: '', reason: '', originalAmount: '', remainingAmount: '', interestType: 'statutory', interestRateCustom: '', garnishmentDate: new Date().toISOString().split('T')[0], status: 'active', description: ''
+    });
+    setShowForm(true);
+  }
+
+  function handleStartEdit(proc: Proceeding) {
+    setEditTarget(proc);
+    setForm({
+      creditor: proc.creditor,
+      enforcementAuthority: proc.enforcementAuthority,
+      caseNumber: proc.caseNumber ?? '',
+      reason: proc.reason,
+      originalAmount: proc.originalAmount,
+      remainingAmount: proc.remainingAmount,
+      interestType: proc.interestType,
+      interestRateCustom: proc.interestRateCustom ?? '',
+      garnishmentDate: proc.garnishmentDate ? new Date(proc.garnishmentDate).toISOString().split('T')[0] : '',
+      status: proc.status,
+      description: proc.description ?? '',
+    });
+    setShowForm(true);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    await fetch('/api/enforcement', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        originalAmount:     Number(form.originalAmount),
-        remainingAmount:    Number(form.remainingAmount),
-        interestRateCustom: form.interestRateCustom ? Number(form.interestRateCustom) : null,
-      }),
-    });
+    const body = {
+      ...form,
+      originalAmount:     Number(form.originalAmount),
+      remainingAmount:    Number(form.remainingAmount),
+      interestRateCustom: form.interestRateCustom ? Number(form.interestRateCustom) : null,
+      garnishmentDate:    new Date(form.garnishmentDate).toISOString(),
+    };
+    if (editTarget) {
+      await fetch(`/api/enforcement/${editTarget.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } else {
+      await fetch('/api/enforcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    }
     setSubmitting(false);
     setShowForm(false);
     setForm({ creditor: '', enforcementAuthority: '', caseNumber: '', reason: '', originalAmount: '', remainingAmount: '', interestType: 'statutory', interestRateCustom: '', garnishmentDate: new Date().toISOString().split('T')[0], status: 'active', description: '' });
+    setEditTarget(null);
     load();
   }
 
@@ -138,7 +176,7 @@ export default function EnforcementPage() {
           </div>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
         >
           <Plus className="w-4 h-4" /> Dodaj zajęcie
@@ -231,9 +269,10 @@ export default function EnforcementPage() {
 
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Historia spłat</p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <button onClick={() => { setShowPayForm(p.id); setPayDate(new Date().toISOString().split('T')[0]); }}
                           className="text-xs text-[#01581E] hover:underline">+ Zarejestruj spłatę</button>
+                        <button onClick={() => handleStartEdit(p)} className="text-xs text-blue-600 hover:underline">Edytuj</button>
                         <button onClick={() => handleDelete(p.id)} className="text-xs text-red-500 hover:text-red-700">Usuń</button>
                       </div>
                     </div>
@@ -284,7 +323,7 @@ export default function EnforcementPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="font-semibold text-foreground">Nowe zajęcie egzekucyjne</h2>
+              <h2 className="font-semibold text-foreground">{editTarget ? 'Edytuj zajęcie' : 'Nowe zajęcie egzekucyjne'}</h2>
               <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -364,7 +403,7 @@ export default function EnforcementPage() {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors">Anuluj</button>
                 <button type="submit" disabled={submitting} className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Dodaj zajęcie'}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editTarget ? 'Zapisz' : 'Dodaj zajęcie')}
                 </button>
               </div>
             </form>

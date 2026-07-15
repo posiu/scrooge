@@ -6,6 +6,7 @@ import { eq, and, isNull, sum, sql } from 'drizzle-orm';
 import { formatCurrency } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import { AddAccountButton } from '@/components/forms/AddAccountButton';
+import { EditAccountButton } from '@/components/forms/EditAccountButton';
 import {
   Landmark,
   Wallet,
@@ -122,7 +123,10 @@ export default async function AccountsPage() {
                       <p className="text-xs text-muted-foreground">{meta.label}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground">{account.currency}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{account.currency}</span>
+                    <EditAccountButton account={account} />
+                  </div>
                 </div>
 
                 {account.institution && (

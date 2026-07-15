@@ -47,9 +47,9 @@ export function TrendsChart({ fromYear, toYear, metric }: Props) {
   );
 
   const metricColors = {
-    income:  '#01581E',
-    expense: '#e05252',
-    savings: '#4fa3e0',
+    income:  'hsl(var(--chart-1))',
+    expense: 'hsl(var(--chart-4))',
+    savings: 'hsl(var(--chart-5))',
   };
 
   const metricLabels = {
@@ -85,7 +85,10 @@ export function TrendsChart({ fromYear, toYear, metric }: Props) {
               border:       '1px solid hsl(var(--border))',
               borderRadius: '8px',
               fontSize:     '12px',
+              color:        'hsl(var(--foreground))',
             }}
+            labelStyle={{ color: 'hsl(var(--foreground))' }}
+            itemStyle={{ color: 'hsl(var(--foreground))' }}
           />
           <Line
             type="monotone"

@@ -204,22 +204,26 @@ export default async function MonthlyBudgetPage({ params }: Props) {
           {Array.from({ length: (calendarDays[0].dayOfWeek + 6) % 7 }).map((_, i) => (
             <div key={`empty-${i}`} />
           ))}
-          {calendarDays.map(({ day, isWeekend, holiday }) => (
-            <div
-              key={day}
-              title={holiday ?? undefined}
-              className={`text-xs rounded-md py-1.5 text-center transition-colors ${
-                holiday
-                  ? 'bg-[#01581E]/15 text-[#01581E] font-semibold cursor-help'
-                  : isWeekend
-                  ? 'text-muted-foreground/60'
-                  : 'text-foreground'
-              }`}
-            >
-              {day}
-              {holiday && <div className="w-1 h-1 rounded-full bg-[#01581E] mx-auto mt-0.5" />}
-            </div>
-          ))}
+          {calendarDays.map(({ day, isWeekend, holiday }) => {
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            return (
+              <Link
+                key={day}
+                href={`/transactions?date=${dateStr}`}
+                title={`${holiday ?? ''} (Kliknij, aby zobaczyć transakcje z tego dnia)`.trim()}
+                className={`text-xs rounded-md py-1.5 text-center transition-colors hover:bg-muted/80 block cursor-pointer ${
+                  holiday
+                    ? 'bg-[#01581E]/15 text-[#01581E] font-semibold'
+                    : isWeekend
+                    ? 'text-muted-foreground/60'
+                    : 'text-foreground'
+                }`}
+              >
+                {day}
+                {holiday && <div className="w-1 h-1 rounded-full bg-[#01581E] mx-auto mt-0.5" />}
+              </Link>
+            );
+          })}
         </div>
         {Object.entries(holidays)
           .filter(([key]) => key.startsWith(`${year}-${String(month).padStart(2, '0')}`))

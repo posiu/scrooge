@@ -51,6 +51,7 @@ export default function TaxesPage() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editTarget, setEditTarget] = useState<Tax | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: '', type: 'personal_income' as TaxType, taxPeriod: '',
@@ -67,17 +68,54 @@ export default function TaxesPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  function openAdd() {
+    setEditTarget(null);
+    setForm({ name: '', type: 'personal_income', taxPeriod: '', taxOffice: '', amountDue: '', amountPaid: '0', dueDate: '', status: 'pending', description: '' });
+    setShowForm(true);
+  }
+
+  function handleStartEdit(tax: Tax) {
+    setEditTarget(tax);
+    setForm({
+      name: tax.name,
+      type: tax.type,
+      taxPeriod: tax.taxPeriod ?? '',
+      taxOffice: tax.taxOffice ?? '',
+      amountDue: tax.amountDue,
+      amountPaid: tax.amountPaid,
+      dueDate: tax.dueDate ? new Date(tax.dueDate).toISOString().split('T')[0] : '',
+      status: tax.status,
+      description: tax.description ?? '',
+    });
+    setShowForm(true);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    await fetch('/api/taxes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, amountDue: Number(form.amountDue), amountPaid: Number(form.amountPaid) }),
-    });
+    const body = {
+      ...form,
+      amountDue: Number(form.amountDue),
+      amountPaid: Number(form.amountPaid),
+      dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : null,
+    };
+    if (editTarget) {
+      await fetch(`/api/taxes/${editTarget.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } else {
+      await fetch('/api/taxes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    }
     setSubmitting(false);
     setShowForm(false);
     setForm({ name: '', type: 'personal_income', taxPeriod: '', taxOffice: '', amountDue: '', amountPaid: '0', dueDate: '', status: 'pending', description: '' });
+    setEditTarget(null);
     load();
   }
 
@@ -106,7 +144,7 @@ export default function TaxesPage() {
           </div>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
         >
           <Plus className="w-4 h-4" /> Dodaj podatek
@@ -182,7 +220,10 @@ export default function TaxesPage() {
                     {tax.description && <p className="text-sm text-muted-foreground">{tax.description}</p>}
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Historia wpłat</p>
-                      <button onClick={() => handleDelete(tax.id)} className="text-xs text-red-500 hover:text-red-700">Usuń podatek</button>
+                      <div className="flex gap-3">
+                        <button onClick={() => handleStartEdit(tax)} className="text-xs text-blue-600 hover:text-blue-700 hover:underline font-medium">Edytuj</button>
+                        <button onClick={() => handleDelete(tax.id)} className="text-xs text-red-500 hover:text-red-700 hover:underline">Usuń podatek</button>
+                      </div>
                     </div>
                     {tax.payments.length === 0 ? (
                       <p className="text-sm text-muted-foreground">Brak zarejestrowanych wpłat.</p>
@@ -212,7 +253,7 @@ export default function TaxesPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="font-semibold text-foreground">Nowy podatek</h2>
+              <h2 className="font-semibold text-foreground">{editTarget ? 'Edytuj podatek' : 'Nowy podatek'}</h2>
               <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -274,7 +315,7 @@ export default function TaxesPage() {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors">Anuluj</button>
                 <button type="submit" disabled={submitting} className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Dodaj'}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editTarget ? 'Zapisz' : 'Dodaj')}
                 </button>
               </div>
             </form>

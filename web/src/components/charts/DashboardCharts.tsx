@@ -10,7 +10,13 @@ import { formatCurrency } from '@/lib/utils';
 interface ChartDataPoint { name: string; value: number; color?: string; }
 interface DashboardChartsProps { userId: string; currentMonth: string; }
 
-const COLORS = ['#01581E', '#29a354', '#4dc075', '#87d9a3', '#bbebca', '#e05252', '#e0a820', '#4fa3e0'];
+const COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-5))',
+  'hsl(var(--chart-4))',
+];
 
 const tooltipStyle = {
   contentStyle: {
@@ -71,8 +77,8 @@ export function DashboardCharts({ userId, currentMonth }: DashboardChartsProps) 
                 formatter={(value: number, name: string) => [formatCurrency(value), name === 'przychody' ? 'Przychody' : 'Wydatki']}
                 {...tooltipStyle}
               />
-              <Bar dataKey="przychody" fill="#01581E" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="wydatki" fill="#e05252" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="przychody" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="wydatki" fill="hsl(var(--chart-4))" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

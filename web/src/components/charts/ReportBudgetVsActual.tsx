@@ -60,7 +60,7 @@ export function ReportBudgetVsActual({ month }: { month: string }) {
           />
           <Legend formatter={(v) => v === 'planned' ? 'Plan' : 'Realizacja'} />
           <Bar dataKey="planned" fill="hsl(var(--muted))" radius={[0, 3, 3, 0]} />
-          <Bar dataKey="actual" fill="#01581E" radius={[0, 3, 3, 0]} />
+          <Bar dataKey="actual" fill="hsl(var(--chart-1))" radius={[0, 3, 3, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
 
-const COLORS = ['#01581E','#29a354','#4dc075','#87d9a3','#e05252','#e0a820','#4fa3e0','#a855f7'];
+const COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-5))',
+  'hsl(var(--chart-4))',
+];
 const tooltipStyle = {
   contentStyle: { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' },
   labelStyle: { color: 'hsl(var(--foreground))', fontWeight: 600 as const },

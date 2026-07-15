@@ -2,18 +2,19 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { transactions, accounts, categories } from '@/lib/db/schema';
-import { eq, and, isNull, desc } from 'drizzle-orm';
+import { eq, and, isNull, desc, gte, lte } from 'drizzle-orm';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import { TransactionFilters } from '@/components/forms/TransactionFilters';
 import { AddTransactionButton } from '@/components/forms/AddTransactionButton';
+import { EditTransactionButton } from '@/components/forms/EditTransactionButton';
 import { ArrowUpRight, ArrowDownRight, ArrowLeftRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; type?: string; category?: string; page?: string }>;
+  searchParams: Promise<{ month?: string; type?: string; category?: string; account?: string; date?: string; page?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -24,11 +25,32 @@ export default async function TransactionsPage({
   const limit = 50;
   const offset = (page - 1) * limit;
 
+  const conditions = [
+    eq(transactions.userId, user.id),
+    isNull(transactions.deletedAt),
+  ];
+
+  if (params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date)) {
+    const dayStart = new Date(`${params.date}T00:00:00.000Z`);
+    const dayEnd = new Date(`${params.date}T23:59:59.999Z`);
+    conditions.push(gte(transactions.date, dayStart));
+    conditions.push(lte(transactions.date, dayEnd));
+  } else if (params.month && /^\d{4}-\d{2}$/.test(params.month)) {
+    const [y, m] = params.month.split('-').map(Number);
+    conditions.push(gte(transactions.date, new Date(y, m - 1, 1)));
+    conditions.push(lte(transactions.date, new Date(y, m, 0, 23, 59, 59)));
+  }
+
+  if (params.type && ['income', 'expense', 'transfer'].includes(params.type)) {
+    conditions.push(eq(transactions.type, params.type as 'income' | 'expense' | 'transfer'));
+  }
+
+  if (params.account) {
+    conditions.push(eq(transactions.accountId, params.account));
+  }
+
   const txList = await db.query.transactions.findMany({
-    where: and(
-      eq(transactions.userId, user.id),
-      isNull(transactions.deletedAt),
-    ),
+    where: and(...conditions),
     with: {
       category: true,
       account: true,
@@ -87,6 +109,7 @@ export default async function TransactionsPage({
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground hidden md:table-cell">Kategoria</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground hidden lg:table-cell">Konto</th>
                 <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Kwota</th>
+                <th className="w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -128,6 +151,9 @@ export default async function TransactionsPage({
                       {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
                       {formatCurrency(tx.amount)}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-right w-10">
+                    <EditTransactionButton transaction={tx} accounts={userAccounts} categories={userCategories} />
                   </td>
                 </tr>
               ))}

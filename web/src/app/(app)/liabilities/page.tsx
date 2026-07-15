@@ -6,6 +6,7 @@ import { eq, and } from 'drizzle-orm';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import { AddLiabilityButton } from '@/components/forms/AddLiabilityButton';
+import { EditLiabilityButton } from '@/components/forms/EditLiabilityButton';
 import { HandCoins, CreditCard, RefreshCw, ShoppingBag, MoreHorizontal } from 'lucide-react';
 
 const liabilityTypeLabels: Record<string, { label: string; icon: React.ElementType; color: string }> = {
@@ -22,31 +23,21 @@ export default async function LiabilitiesPage() {
   if (!user) return null;
 
   const items = await db.query.liabilities.findMany({
-    where: and(eq(liabilities.userId, user.id), eq(liabilities.isActive, true)),
+    where: and(
+      eq(liabilities.userId, user.id),
+      eq(liabilities.isActive, true),
+    ),
     with: { category: true },
     orderBy: (l, { asc }) => [asc(l.dueDate)],
   });
 
-  const totalRemaining = items.reduce((s, l) => s + parseFloat(l.remainingAmount), 0);
-  const totalMonthly = items.reduce((s, l) => s + parseFloat(l.monthlyPayment ?? '0'), 0);
-
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <Header title="Zobowiązania" />
-
-      {/* Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-4 col-span-2 sm:col-span-1">
-          <p className="text-xs text-muted-foreground mb-1">Łączne zadłużenie</p>
-          <p className="text-2xl font-bold text-destructive">{formatCurrency(totalRemaining)}</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-1">Miesięczne raty</p>
-          <p className="text-lg font-bold text-foreground">{formatCurrency(totalMonthly)}</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-1">Aktywnych</p>
-          <p className="text-lg font-bold text-foreground">{items.length}</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground">Zobowiązania</h1>
+          <p className="text-sm text-muted-foreground">Kredyty, pożyczki, raty i subskrypcje</p>
         </div>
       </div>
 
@@ -82,9 +73,12 @@ export default async function LiabilitiesPage() {
                       <p className="text-xs text-muted-foreground">{meta.label}{l.category ? ` · ${l.category.name}` : ''}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-destructive">{formatCurrency(remaining)}</p>
-                    <p className="text-xs text-muted-foreground">z {formatCurrency(total)}</p>
+                  <div className="text-right flex items-start gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-destructive">{formatCurrency(remaining)}</p>
+                      <p className="text-xs text-muted-foreground">z {formatCurrency(total)}</p>
+                    </div>
+                    <EditLiabilityButton liability={l} />
                   </div>
                 </div>
 
