@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { DashboardCharts } from '@/components/charts/DashboardCharts';
 import { DashboardMonthNav } from '@/components/dashboard/DashboardMonthNav';
 import {
-  TrendingUp, TrendingDown, Wallet, HandCoins, ArrowRight, CalendarDays, Receipt, Gavel,
+  TrendingUp, TrendingDown, Wallet, HandCoins, ArrowRight, CalendarDays, Receipt, Gavel, LineChart,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -71,6 +71,18 @@ async function getObligationsSummary(userId: string) {
   };
 }
 
+async function getInvestmentsSummary(userId: string) {
+  const [row] = await db.select({
+    total: sql<string>`coalesce(sum(case when ${transactions.type} = 'income' then ${transactions.amount} when ${transactions.type} = 'expense' then -${transactions.amount} else 0 end), 0)`,
+    count: sql<number>`count(distinct ${accounts.id})`,
+  })
+    .from(accounts)
+    .leftJoin(transactions, and(eq(transactions.accountId, accounts.id), isNull(transactions.deletedAt)))
+    .where(and(eq(accounts.userId, userId), eq(accounts.type, 'investment'), eq(accounts.isActive, true)));
+
+  return { total: parseFloat(row?.total ?? '0'), count: Number(row?.count ?? 0) };
+}
+
 async function getYearData(userId: string, year: string) {
   const yearStart = new Date(`${year}-01-01T00:00:00Z`);
   const now = new Date();
@@ -94,10 +106,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const mode = (sp.mode === 'year' ? 'year' : 'month') as 'month' | 'year';
   const selectedYear = selectedMonth.split('-')[0];
 
-  const [data, yearData, obligations] = await Promise.all([
+  const [data, yearData, obligations, investments] = await Promise.all([
     getDashboardData(user.id, selectedMonth),
     mode === 'year' ? getYearData(user.id, selectedYear) : null,
     getObligationsSummary(user.id),
+    getInvestmentsSummary(user.id),
   ]);
 
   const displayIncome  = mode === 'year' ? (yearData?.income ?? 0) : data.income;
@@ -139,6 +152,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       bg: 'bg-amber-500/10',
       trend: null,
     },
+    {
+      label: 'Inwestycje',
+      value: formatCurrency(investments.total),
+      icon: LineChart,
+      color: 'text-indigo-600 dark:text-indigo-400',
+      bg: 'bg-indigo-500/10',
+      trend: investments.count > 0 ? `${investments.count} ${investments.count === 1 ? 'konto' : 'kont'}` : null,
+      trendColor: 'text-muted-foreground',
+    },
   ];
 
   return (
@@ -160,7 +182,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
           <div
             key={stat.label}

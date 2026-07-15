@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { Plus, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { INVESTMENT_CATEGORIES } from '@/lib/investmentCategories';
 
 export function AddAccountButton() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [type, setType] = useState('bank');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,6 +21,7 @@ export function AddAccountButton() {
         body: JSON.stringify({
           name: fd.get('name'),
           type: fd.get('type'),
+          investmentCategory: fd.get('type') === 'investment' ? fd.get('investmentCategory') || null : null,
           currency: fd.get('currency') || 'PLN',
           institution: fd.get('institution') || null,
           description: fd.get('description') || null,
@@ -59,12 +62,13 @@ export function AddAccountButton() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-foreground block mb-1.5">Typ *</label>
-                  <select name="type" required className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
+                  <select name="type" required value={type} onChange={(e) => setType(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
                     <option value="bank">Konto bankowe</option>
                     <option value="cash">Gotówka</option>
                     <option value="crypto">Kryptowaluty</option>
                     <option value="fund">Fundusz</option>
                     <option value="insurance">Polisa</option>
+                    <option value="investment">Inwestycja</option>
                     <option value="other">Inne</option>
                   </select>
                 </div>
@@ -78,6 +82,16 @@ export function AddAccountButton() {
                   </select>
                 </div>
               </div>
+              {type === 'investment' && (
+                <div>
+                  <label className="text-xs font-medium text-foreground block mb-1.5">Kategoria inwestycji *</label>
+                  <select name="investmentCategory" required className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
+                    {INVESTMENT_CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1.5">Instytucja</label>
                 <input name="institution" placeholder="np. PKO Bank Polski" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />

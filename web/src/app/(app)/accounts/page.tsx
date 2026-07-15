@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { accounts, transactions } from '@/lib/db/schema';
 import { eq, and, isNull, sum, sql } from 'drizzle-orm';
 import { formatCurrency } from '@/lib/utils';
+import { INVESTMENT_CATEGORY_LABELS } from '@/lib/investmentCategories';
 import { Header } from '@/components/layout/Header';
 import { AddAccountButton } from '@/components/forms/AddAccountButton';
 import { EditAccountButton } from '@/components/forms/EditAccountButton';
@@ -16,15 +17,17 @@ import {
   Boxes,
   TrendingUp,
   TrendingDown,
+  LineChart,
 } from 'lucide-react';
 
 const accountTypeLabels: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  bank:      { label: 'Konto bankowe', icon: Landmark,   color: 'text-blue-600 dark:text-blue-400' },
-  cash:      { label: 'Gotówka',       icon: Wallet,      color: 'text-amber-600 dark:text-amber-400' },
-  crypto:    { label: 'Kryptowaluty', icon: Bitcoin,     color: 'text-orange-600 dark:text-orange-400' },
-  fund:      { label: 'Fundusz',       icon: PiggyBank,   color: 'text-[#01581E]' },
-  insurance: { label: 'Polisa',        icon: ShieldCheck, color: 'text-purple-600 dark:text-purple-400' },
-  other:     { label: 'Inne',          icon: Boxes,       color: 'text-muted-foreground' },
+  bank:       { label: 'Konto bankowe', icon: Landmark,   color: 'text-blue-600 dark:text-blue-400' },
+  cash:       { label: 'Gotówka',       icon: Wallet,      color: 'text-amber-600 dark:text-amber-400' },
+  crypto:     { label: 'Kryptowaluty', icon: Bitcoin,     color: 'text-orange-600 dark:text-orange-400' },
+  fund:       { label: 'Fundusz',       icon: PiggyBank,   color: 'text-[#01581E]' },
+  insurance:  { label: 'Polisa',        icon: ShieldCheck, color: 'text-purple-600 dark:text-purple-400' },
+  investment: { label: 'Inwestycja',    icon: LineChart,   color: 'text-indigo-600 dark:text-indigo-400' },
+  other:      { label: 'Inne',          icon: Boxes,       color: 'text-muted-foreground' },
 };
 
 async function getAccountsWithBalance(userId: string) {
@@ -120,7 +123,12 @@ export default async function AccountsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{account.name}</p>
-                      <p className="text-xs text-muted-foreground">{meta.label}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {meta.label}
+                        {account.type === 'investment' && account.investmentCategory
+                          ? ` · ${INVESTMENT_CATEGORY_LABELS[account.investmentCategory] ?? account.investmentCategory}`
+                          : ''}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

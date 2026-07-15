@@ -15,7 +15,13 @@ import { relations } from 'drizzle-orm';
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const accountTypeEnum = pgEnum('account_type', [
-  'bank', 'cash', 'crypto', 'fund', 'insurance', 'other',
+  'bank', 'cash', 'crypto', 'fund', 'insurance', 'investment', 'other',
+]);
+
+export const investmentCategoryEnum = pgEnum('investment_category', [
+  'stocks', 'treasury_bonds', 'corporate_bonds', 'etf', 'deposits', 'mutual_funds',
+  'currencies', 'precious_metals', 'art', 'cryptocurrencies', 'company_shares',
+  'derivatives', 'other',
 ]);
 
 export const transactionTypeEnum = pgEnum('transaction_type', [
@@ -27,7 +33,7 @@ export const categoryTypeEnum = pgEnum('category_type', [
 ]);
 
 export const liabilityTypeEnum = pgEnum('liability_type', [
-  'loan', 'credit', 'subscription', 'installment', 'other',
+  'loan', 'credit', 'subscription', 'installment', 'personal_loan', 'bank_loan', 'company_loan', 'other',
 ]);
 
 export const featureStatusEnum = pgEnum('feature_request_status', [
@@ -75,6 +81,7 @@ export const accounts = pgTable('accounts', {
   userId:      uuid('user_id').notNull(),
   name:        text('name').notNull(),
   type:        accountTypeEnum('type').notNull(),
+  investmentCategory: investmentCategoryEnum('investment_category'),
   currency:    text('currency').notNull().default('PLN'),
   institution: text('institution'),
   description: text('description'),

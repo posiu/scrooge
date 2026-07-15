@@ -40,7 +40,7 @@
 ### Tabele główne
 
 ```
-accounts           — Konta bankowe/gotówkowe/krypto
+accounts           — Konta bankowe/gotówkowe/krypto/inwestycyjne
 categories         — Kategorie transakcji (systemowe + użytkownika)
 transactions       — Wszystkie transakcje
 budgets            — Plany budżetowe (miesiąc × kategoria)
@@ -77,9 +77,11 @@ goal_deposits      — Historia wpłat na cel
 
 | Enum | Wartości |
 |------|---------|
-| `account_type` | checking, savings, cash, credit, investment, crypto, other |
+| `account_type` | bank, cash, crypto, fund, insurance, investment, other |
+| `investment_category` | stocks, treasury_bonds, corporate_bonds, etf, deposits, mutual_funds, currencies, precious_metals, art, cryptocurrencies, company_shares, derivatives, other |
 | `transaction_type` | income, expense, transfer |
 | `category_type` | income, expense, obligation |
+| `liability_type` | loan, credit, subscription, installment, personal_loan, bank_loan, company_loan, other |
 | `tax_type` | personal_income, corporate, real_estate, land, pcc, investment, capital_gains, other |
 | `tax_status` | pending, partially_paid, paid, overdue |
 | `interest_type` | statutory, statutory_commercial, contractual, tax, tax_delayed, custom |
@@ -230,6 +232,7 @@ Migracje: `src/lib/db/migrations/`
 | 0000 | init | Tabele bazowe: accounts, categories, transactions, budgets, liabilities, user_settings, ai_chat_sessions, feature_requests |
 | 0001 | add_taxes_enforcement | Tabele: taxes, tax_payments, enforcement_proceedings, enforcement_payments |
 | 0002 | add_savings_goals | Tabele: savings_goals, goal_deposits |
+| 0003 | abnormal_wallop | Enum `investment_category`, `account_type.investment`, `liability_type.{personal_loan,bank_loan,company_loan}`, kolumna `accounts.investment_category` |
 
 ---
 

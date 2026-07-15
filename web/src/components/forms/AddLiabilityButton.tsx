@@ -62,6 +62,9 @@ export function AddLiabilityButton() {
                   <option value="credit">Karta kredytowa</option>
                   <option value="subscription">Subskrypcja</option>
                   <option value="installment">Rata</option>
+                  <option value="personal_loan">Pożyczka osobista</option>
+                  <option value="bank_loan">Pożyczka bankowa</option>
+                  <option value="company_loan">Pożyczka z firmy</option>
                   <option value="other">Inne</option>
                 </select>
               </div>

@@ -79,6 +79,7 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
 - Przełącznik miesiąc/rok z nawigacją (`?month=YYYY-MM&mode=month|year`)
 - Przełącznik motywu jasny/ciemny
 - Bloczek podsumowania podatków i zajęć egzekucyjnych (kwoty do zapłaty, link do szczegółów)
+- Wyodrębniona zagregowana wartość inwestycji
 - Wykresy: trendy 6-miesięczne, struktura wydatków (pie chart)
 - Skróty do kluczowych sekcji
 
@@ -94,11 +95,12 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
 - Realizacja budżetu w ujęciu procentowym
 
 ### 🏦 Konta
-- Konta bankowe, oszczędnościowe, gotówkowe, kryptowalutowe
+- Konta bankowe, oszczędnościowe, gotówkowe, kryptowalutowe, inwestycyjne
+- Konta inwestycyjne z kategorią: akcje, obligacje skarbowe, obligacje korporacyjne, ETF, lokaty, fundusze inwestycyjne, waluty, metale szlachetne, dzieła sztuki, kryptowaluty, udziały w firmach, instrumenty pochodne, inne
 - Salda i historia transakcji
 
 ### 📋 Zobowiązania
-- Kredyty, pożyczki, rata 0%
+- Kredyty, pożyczki (osobista, bankowa, z firmy), karty kredytowe, subskrypcje, raty
 - Kalkulator rat i harmonogram spłat
 
 ### 🧾 Podatki (`/taxes`)

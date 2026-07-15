@@ -6,12 +6,13 @@ import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 
 const AccountSchema = z.object({
-  name:        z.string().min(1),
-  type:        z.enum(['bank', 'cash', 'crypto', 'fund', 'insurance', 'other']),
-  currency:    z.string().default('PLN'),
-  institution: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  sortOrder:   z.number().int().optional(),
+  name:               z.string().min(1),
+  type:               z.enum(['bank', 'cash', 'crypto', 'fund', 'insurance', 'investment', 'other']),
+  investmentCategory: z.enum(['stocks', 'treasury_bonds', 'corporate_bonds', 'etf', 'deposits', 'mutual_funds', 'currencies', 'precious_metals', 'art', 'cryptocurrencies', 'company_shares', 'derivatives', 'other']).nullable().optional(),
+  currency:           z.string().default('PLN'),
+  institution:        z.string().nullable().optional(),
+  description:        z.string().nullable().optional(),
+  sortOrder:          z.number().int().optional(),
 });
 
 export async function GET(req: NextRequest) {

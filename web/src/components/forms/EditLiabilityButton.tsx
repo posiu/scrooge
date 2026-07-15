@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 interface Liability {
   id: string;
   name: string;
-  type: 'loan' | 'credit' | 'subscription' | 'installment' | 'other';
+  type: 'loan' | 'credit' | 'subscription' | 'installment' | 'personal_loan' | 'bank_loan' | 'company_loan' | 'other';
   totalAmount: string;
   remainingAmount: string;
   monthlyPayment: string | null;
@@ -102,6 +102,9 @@ export function EditLiabilityButton({ liability }: Props) {
                   <option value="credit">Karta kredytowa</option>
                   <option value="subscription">Subskrypcja</option>
                   <option value="installment">Rata</option>
+                  <option value="personal_loan">Pożyczka osobista</option>
+                  <option value="bank_loan">Pożyczka bankowa</option>
+                  <option value="company_loan">Pożyczka z firmy</option>
                   <option value="other">Inne</option>
                 </select>
               </div>

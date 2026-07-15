@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 const LiabilitySchema = z.object({
   name:            z.string().min(1),
-  type:            z.enum(['loan', 'credit', 'subscription', 'installment', 'other']),
+  type:            z.enum(['loan', 'credit', 'subscription', 'installment', 'personal_loan', 'bank_loan', 'company_loan', 'other']),
   totalAmount:     z.coerce.number().positive(),
   remainingAmount: z.coerce.number().nonnegative(),
   monthlyPayment:  z.coerce.number().nonnegative().nullable().optional(),

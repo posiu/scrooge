@@ -6,13 +6,14 @@ import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 
 const UpdateSchema = z.object({
-  name:        z.string().min(1).optional(),
-  type:        z.enum(['bank', 'cash', 'crypto', 'fund', 'insurance', 'other']).optional(),
-  currency:    z.string().optional(),
-  institution: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  sortOrder:   z.number().int().optional(),
-  isActive:    z.boolean().optional(),
+  name:               z.string().min(1).optional(),
+  type:               z.enum(['bank', 'cash', 'crypto', 'fund', 'insurance', 'investment', 'other']).optional(),
+  investmentCategory: z.enum(['stocks', 'treasury_bonds', 'corporate_bonds', 'etf', 'deposits', 'mutual_funds', 'currencies', 'precious_metals', 'art', 'cryptocurrencies', 'company_shares', 'derivatives', 'other']).nullable().optional(),
+  currency:           z.string().optional(),
+  institution:        z.string().nullable().optional(),
+  description:        z.string().nullable().optional(),
+  sortOrder:          z.number().int().optional(),
+  isActive:           z.boolean().optional(),
 });
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -41,13 +42,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data } = parsed;
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
-  if (data.name !== undefined)        updateData.name        = data.name;
-  if (data.type !== undefined)        updateData.type        = data.type;
-  if (data.currency !== undefined)    updateData.currency    = data.currency;
-  if (data.institution !== undefined) updateData.institution = data.institution ?? null;
-  if (data.description !== undefined) updateData.description = data.description ?? null;
-  if (data.sortOrder !== undefined)   updateData.sortOrder   = data.sortOrder;
-  if (data.isActive !== undefined)    updateData.isActive    = data.isActive;
+  if (data.name !== undefined)               updateData.name               = data.name;
+  if (data.type !== undefined)               updateData.type               = data.type;
+  if (data.investmentCategory !== undefined) updateData.investmentCategory = data.investmentCategory ?? null;
+  if (data.currency !== undefined)           updateData.currency           = data.currency;
+  if (data.institution !== undefined)        updateData.institution        = data.institution ?? null;
+  if (data.description !== undefined)        updateData.description        = data.description ?? null;
+  if (data.sortOrder !== undefined)          updateData.sortOrder          = data.sortOrder;
+  if (data.isActive !== undefined)           updateData.isActive           = data.isActive;
 
   const [updated] = await db.update(accounts)
     .set(updateData)

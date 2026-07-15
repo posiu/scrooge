@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 const UpdateSchema = z.object({
   name:            z.string().min(1).optional(),
-  type:            z.enum(['loan', 'credit', 'subscription', 'installment', 'other']).optional(),
+  type:            z.enum(['loan', 'credit', 'subscription', 'installment', 'personal_loan', 'bank_loan', 'company_loan', 'other']).optional(),
   totalAmount:     z.coerce.number().positive().optional(),
   remainingAmount: z.coerce.number().nonnegative().optional(),
   monthlyPayment:  z.coerce.number().nonnegative().nullable().optional(),
