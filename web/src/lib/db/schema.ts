@@ -15,7 +15,7 @@ import { relations } from 'drizzle-orm';
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const accountTypeEnum = pgEnum('account_type', [
-  'bank', 'cash', 'crypto', 'fund', 'insurance', 'investment', 'other',
+  'bank', 'cash', 'crypto', 'fund', 'insurance', 'other',
 ]);
 
 export const investmentCategoryEnum = pgEnum('investment_category', [
@@ -81,7 +81,6 @@ export const accounts = pgTable('accounts', {
   userId:      uuid('user_id').notNull(),
   name:        text('name').notNull(),
   type:        accountTypeEnum('type').notNull(),
-  investmentCategory: investmentCategoryEnum('investment_category'),
   currency:    text('currency').notNull().default('PLN'),
   institution: text('institution'),
   description: text('description'),
@@ -91,6 +90,24 @@ export const accounts = pgTable('accounts', {
   updatedAt:   timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('accounts_user_id_idx').on(t.userId),
+]);
+
+// ─── Investments ──────────────────────────────────────────────────────────────
+
+export const investments = pgTable('investments', {
+  id:            uuid('id').primaryKey().defaultRandom(),
+  userId:        uuid('user_id').notNull(),
+  name:          text('name').notNull(),
+  category:      investmentCategoryEnum('category').notNull(),
+  currentValue:  numeric('current_value', { precision: 15, scale: 2 }).notNull(),
+  currency:      text('currency').notNull().default('PLN'),
+  institution:   text('institution'),
+  description:   text('description'),
+  isActive:      boolean('is_active').notNull().default(true),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:     timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('investments_user_id_idx').on(t.userId),
 ]);
 
 // ─── Categories ───────────────────────────────────────────────────────────────

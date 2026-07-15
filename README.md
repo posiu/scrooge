@@ -95,9 +95,14 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
 - Realizacja budżetu w ujęciu procentowym
 
 ### 🏦 Konta
-- Konta bankowe, oszczędnościowe, gotówkowe, kryptowalutowe, inwestycyjne
-- Konta inwestycyjne z kategorią: akcje, obligacje skarbowe, obligacje korporacyjne, ETF, lokaty, fundusze inwestycyjne, waluty, metale szlachetne, dzieła sztuki, kryptowaluty, udziały w firmach, instrumenty pochodne, inne
+- Konta bankowe, oszczędnościowe, gotówkowe, kryptowalutowe
 - Salda i historia transakcji
+
+### 📈 Inwestycje (`/investments`)
+- Osobna sekcja menu, analogiczna do Kont
+- Dodawanie / edycja / usuwanie inwestycji z bieżącą wartością
+- Kategorie: akcje, obligacje skarbowe, obligacje korporacyjne, ETF, lokaty, fundusze inwestycyjne, waluty, metale szlachetne, dzieła sztuki, kryptowaluty, udziały w firmach, instrumenty pochodne, inne
+- Podsumowanie łącznej wartości portfela
 
 ### 📋 Zobowiązania
 - Kredyty, pożyczki (osobista, bankowa, z firmy), karty kredytowe, subskrypcje, raty
@@ -155,6 +160,7 @@ web/
 │   │   │   ├── transactions/
 │   │   │   ├── budget/
 │   │   │   ├── accounts/
+│   │   │   ├── investments/
 │   │   │   ├── liabilities/
 │   │   │   ├── taxes/
 │   │   │   ├── enforcement/
@@ -171,6 +177,7 @@ web/
 │   │   │       └── page.tsx    # Panel demo data
 │   │   ├── api/             # API Route Handlers
 │   │   │   ├── accounts/
+│   │   │   ├── investments/ (+ /[id])
 │   │   │   ├── budgets/
 │   │   │   ├── budget/templates/  (+ /apply)
 │   │   │   ├── categories/  (+ /[id])

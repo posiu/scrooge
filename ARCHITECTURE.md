@@ -40,7 +40,7 @@
 ### Tabele główne
 
 ```
-accounts           — Konta bankowe/gotówkowe/krypto/inwestycyjne
+accounts           — Konta bankowe/gotówkowe/krypto
 categories         — Kategorie transakcji (systemowe + użytkownika)
 transactions       — Wszystkie transakcje
 budgets            — Plany budżetowe (miesiąc × kategoria)
@@ -50,6 +50,12 @@ liabilities        — Zobowiązania (kredyty, pożyczki)
 user_settings      — Ustawienia użytkownika (isAdmin, itd.)
 ai_chat_sessions   — Sesje AI asystenta
 feature_requests   — System propozycji funkcji
+```
+
+### Tabela inwestycji
+
+```
+investments        — Inwestycje (akcje, obligacje, ETF, krypto, metale, itd.)
 ```
 
 ### Tabele modułu Podatki
@@ -77,7 +83,7 @@ goal_deposits      — Historia wpłat na cel
 
 | Enum | Wartości |
 |------|---------|
-| `account_type` | bank, cash, crypto, fund, insurance, investment, other |
+| `account_type` | bank, cash, crypto, fund, insurance, other |
 | `investment_category` | stocks, treasury_bonds, corporate_bonds, etf, deposits, mutual_funds, currencies, precious_metals, art, cryptocurrencies, company_shares, derivatives, other |
 | `transaction_type` | income, expense, transfer |
 | `category_type` | income, expense, obligation |
@@ -104,6 +110,14 @@ Wszystkie endpointy wymagają aktywnej sesji Supabase (cookie-based).
 | POST | `/api/accounts` | Utwórz konto |
 | PUT | `/api/accounts/[id]` | Zaktualizuj konto |
 | DELETE | `/api/accounts/[id]` | Usuń konto |
+
+#### Inwestycje
+| Method | Path | Opis |
+|--------|------|------|
+| GET | `/api/investments` | Lista inwestycji użytkownika |
+| POST | `/api/investments` | Dodaj inwestycję |
+| PUT | `/api/investments/[id]` | Edytuj inwestycję |
+| DELETE | `/api/investments/[id]` | Usuń inwestycję |
 
 #### Transakcje
 | Method | Path | Opis |
@@ -232,7 +246,8 @@ Migracje: `src/lib/db/migrations/`
 | 0000 | init | Tabele bazowe: accounts, categories, transactions, budgets, liabilities, user_settings, ai_chat_sessions, feature_requests |
 | 0001 | add_taxes_enforcement | Tabele: taxes, tax_payments, enforcement_proceedings, enforcement_payments |
 | 0002 | add_savings_goals | Tabele: savings_goals, goal_deposits |
-| 0003 | abnormal_wallop | Enum `investment_category`, `account_type.investment`, `liability_type.{personal_loan,bank_loan,company_loan}`, kolumna `accounts.investment_category` |
+| 0003 | abnormal_wallop | Enum `investment_category`, `liability_type.{personal_loan,bank_loan,company_loan}` |
+| 0004 | special_wolverine | Tabela `investments`; cofnięcie `account_type.investment` i kolumny `accounts.investment_category` (inwestycje przeniesione do własnej tabeli) |
 
 ---
 

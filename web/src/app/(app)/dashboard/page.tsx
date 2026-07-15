@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
-import { transactions, budgets, accounts, liabilities, taxes, enforcementProceedings } from '@/lib/db/schema';
+import { transactions, budgets, liabilities, taxes, enforcementProceedings, investments } from '@/lib/db/schema';
 import { eq, and, gte, lte, isNull, sum, sql } from 'drizzle-orm';
 import { formatCurrency, formatMonth, getCurrentMonth } from '@/lib/utils';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
@@ -73,12 +73,11 @@ async function getObligationsSummary(userId: string) {
 
 async function getInvestmentsSummary(userId: string) {
   const [row] = await db.select({
-    total: sql<string>`coalesce(sum(case when ${transactions.type} = 'income' then ${transactions.amount} when ${transactions.type} = 'expense' then -${transactions.amount} else 0 end), 0)`,
-    count: sql<number>`count(distinct ${accounts.id})`,
+    total: sql<string>`coalesce(sum(${investments.currentValue}), 0)`,
+    count: sql<number>`count(*)`,
   })
-    .from(accounts)
-    .leftJoin(transactions, and(eq(transactions.accountId, accounts.id), isNull(transactions.deletedAt)))
-    .where(and(eq(accounts.userId, userId), eq(accounts.type, 'investment'), eq(accounts.isActive, true)));
+    .from(investments)
+    .where(and(eq(investments.userId, userId), eq(investments.isActive, true)));
 
   return { total: parseFloat(row?.total ?? '0'), count: Number(row?.count ?? 0) };
 }
@@ -106,7 +105,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const mode = (sp.mode === 'year' ? 'year' : 'month') as 'month' | 'year';
   const selectedYear = selectedMonth.split('-')[0];
 
-  const [data, yearData, obligations, investments] = await Promise.all([
+  const [data, yearData, obligations, investmentsSummary] = await Promise.all([
     getDashboardData(user.id, selectedMonth),
     mode === 'year' ? getYearData(user.id, selectedYear) : null,
     getObligationsSummary(user.id),
@@ -154,11 +153,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     },
     {
       label: 'Inwestycje',
-      value: formatCurrency(investments.total),
+      value: formatCurrency(investmentsSummary.total),
       icon: LineChart,
       color: 'text-indigo-600 dark:text-indigo-400',
       bg: 'bg-indigo-500/10',
-      trend: investments.count > 0 ? `${investments.count} ${investments.count === 1 ? 'konto' : 'kont'}` : null,
+      trend: investmentsSummary.count > 0 ? `${investmentsSummary.count} ${investmentsSummary.count === 1 ? 'pozycja' : 'pozycji'}` : null,
       trendColor: 'text-muted-foreground',
     },
   ];

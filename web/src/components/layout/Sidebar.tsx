@@ -8,7 +8,7 @@ import {
   LayoutDashboard, ArrowLeftRight, CalendarDays, BarChart3, TrendingUp,
   Landmark, HandCoins, Tags, FileStack, Map, Settings, LogOut,
   ChevronRight, TrendingDown, Brain, Receipt, Gavel, ShieldCheck,
-  Download, Target,
+  Download, Target, LineChart,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: 'Konta', href: '/accounts', icon: Landmark },
+  { label: 'Inwestycje', href: '/investments', icon: LineChart },
 ];
 
 const liabilityItems: NavItem[] = [
