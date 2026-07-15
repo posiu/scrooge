@@ -33,8 +33,29 @@ export default function GoalsPage() {
   const [depositTarget, setDepositTarget] = useState<Goal | null>(null);
   const [depositAmount, setDepositAmount] = useState('');
   const [depositNote, setDepositNote] = useState('');
+  const [editTarget, setEditTarget] = useState<Goal | null>(null);
 
   const [form, setForm] = useState({ name: '', targetAmount: '', currentAmount: '0', targetDate: '', icon: '🎯', color: '#01581E', description: '' });
+
+  function closeForm() {
+    setShowForm(false);
+    setEditTarget(null);
+    setForm({ name: '', targetAmount: '', currentAmount: '0', targetDate: '', icon: '🎯', color: '#01581E', description: '' });
+  }
+
+  function handleStartEdit(goal: Goal) {
+    setEditTarget(goal);
+    setForm({
+      name: goal.name,
+      targetAmount: goal.targetAmount,
+      currentAmount: goal.currentAmount,
+      targetDate: goal.targetDate ? goal.targetDate.slice(0, 10) : '',
+      icon: goal.icon ?? '🎯',
+      color: goal.color,
+      description: goal.description ?? '',
+    });
+    setShowForm(true);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,14 +70,22 @@ export default function GoalsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    await fetch('/api/goals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, targetAmount: Number(form.targetAmount), currentAmount: Number(form.currentAmount) }),
-    });
+    const payload = { ...form, targetAmount: Number(form.targetAmount), currentAmount: Number(form.currentAmount) };
+    if (editTarget) {
+      await fetch(`/api/goals/${editTarget.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      await fetch('/api/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    }
     setSubmitting(false);
-    setShowForm(false);
-    setForm({ name: '', targetAmount: '', currentAmount: '0', targetDate: '', icon: '🎯', color: '#01581E', description: '' });
+    closeForm();
     load();
   }
 
@@ -156,6 +185,10 @@ export default function GoalsPage() {
                                 className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-[#01581E]">
                                 <TrendingUp className="w-4 h-4" />
                               </button>
+                              <button onClick={() => handleStartEdit(goal)} title="Edytuj cel"
+                                className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                                <Pencil className="w-4 h-4" />
+                              </button>
                               <button onClick={() => handleDelete(goal.id, goal.name)}
                                 className="p-1.5 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600">
                                 <Trash2 className="w-4 h-4" />
@@ -244,6 +277,9 @@ export default function GoalsPage() {
                     <p className="font-medium text-foreground">{goal.name}</p>
                     <p className="text-sm text-green-600 font-medium">✓ Cel osiągnięty — {fmt(goal.currentAmount)}</p>
                   </div>
+                  <button onClick={() => handleStartEdit(goal)} title="Edytuj cel" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
                   <button onClick={() => handleDelete(goal.id, goal.name)} className="p-1.5 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -254,13 +290,13 @@ export default function GoalsPage() {
         </div>
       )}
 
-      {/* New goal modal */}
+      {/* Goal form modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="font-semibold text-foreground">Nowy cel oszczędnościowy</h2>
-              <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
+              <h2 className="font-semibold text-foreground">{editTarget ? 'Edytuj cel' : 'Nowy cel oszczędnościowy'}</h2>
+              <button onClick={closeForm}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
@@ -321,10 +357,10 @@ export default function GoalsPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Anuluj</button>
+                <button type="button" onClick={closeForm} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Anuluj</button>
                 <button type="submit" disabled={submitting}
                   className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Utwórz cel</>}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> {editTarget ? 'Zapisz zmiany' : 'Utwórz cel'}</>}
                 </button>
               </div>
             </form>

@@ -77,6 +77,8 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
 ### 📊 Dashboard
 - Przegląd miesięczny/roczny: przychody, wydatki, oszczędności, zobowiązania
 - Przełącznik miesiąc/rok z nawigacją (`?month=YYYY-MM&mode=month|year`)
+- Przełącznik motywu jasny/ciemny
+- Bloczek podsumowania podatków i zajęć egzekucyjnych (kwoty do zapłaty, link do szczegółów)
 - Wykresy: trendy 6-miesięczne, struktura wydatków (pie chart)
 - Skróty do kluczowych sekcji
 
@@ -112,6 +114,7 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
 
 ### 🎯 Cele oszczędnościowe (`/goals`)
 - Wizualne karty z paskami postępu
+- Dodawanie / edycja / usuwanie celów
 - Ikony i kolory per cel
 - Historia wpłat
 - Licznik dni do terminu / przekroczenia

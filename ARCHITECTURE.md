@@ -164,6 +164,7 @@ Wszystkie endpointy wymagają aktywnej sesji Supabase (cookie-based).
 |--------|------|------|
 | GET | `/api/goals` | Lista celów |
 | POST | `/api/goals` | Utwórz cel |
+| PUT | `/api/goals/[id]` | Edytuj cel |
 | POST | `/api/goals/[id]` | Dodaj wpłatę |
 | DELETE | `/api/goals/[id]` | Usuń cel |
 

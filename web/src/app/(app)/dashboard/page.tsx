@@ -2,14 +2,14 @@ export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
-import { transactions, budgets, accounts, liabilities } from '@/lib/db/schema';
+import { transactions, budgets, accounts, liabilities, taxes, enforcementProceedings } from '@/lib/db/schema';
 import { eq, and, gte, lte, isNull, sum, sql } from 'drizzle-orm';
 import { formatCurrency, formatMonth, getCurrentMonth } from '@/lib/utils';
-import { Header } from '@/components/layout/Header';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { DashboardCharts } from '@/components/charts/DashboardCharts';
 import { DashboardMonthNav } from '@/components/dashboard/DashboardMonthNav';
 import {
-  TrendingUp, TrendingDown, Wallet, HandCoins, ArrowRight, CalendarDays,
+  TrendingUp, TrendingDown, Wallet, HandCoins, ArrowRight, CalendarDays, Receipt, Gavel,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -47,6 +47,30 @@ async function getDashboardData(userId: string, month: string) {
   return { currentMonth: month, income, expense, savings, planned, budgetUsed, recentTransactions, liabilitiesCount: Number(activeLiabilities[0]?.count ?? 0) };
 }
 
+async function getObligationsSummary(userId: string) {
+  const [taxAgg, enforcementAgg] = await Promise.all([
+    db.select({
+      total: sql<string>`sum(${taxes.amountDue} - ${taxes.amountPaid})`,
+      pendingCount: sql<number>`count(*) filter (where ${taxes.status} != 'paid')`,
+      totalCount: sql<number>`count(*)`,
+    }).from(taxes).where(eq(taxes.userId, userId)),
+    db.select({
+      total: sql<string>`sum(${enforcementProceedings.remainingAmount})`,
+      pendingCount: sql<number>`count(*) filter (where ${enforcementProceedings.status} != 'satisfied')`,
+      totalCount: sql<number>`count(*)`,
+    }).from(enforcementProceedings).where(eq(enforcementProceedings.userId, userId)),
+  ]);
+
+  return {
+    taxDue: parseFloat(taxAgg[0]?.total ?? '0'),
+    taxPendingCount: Number(taxAgg[0]?.pendingCount ?? 0),
+    taxTotalCount: Number(taxAgg[0]?.totalCount ?? 0),
+    enforcementRemaining: parseFloat(enforcementAgg[0]?.total ?? '0'),
+    enforcementPendingCount: Number(enforcementAgg[0]?.pendingCount ?? 0),
+    enforcementTotalCount: Number(enforcementAgg[0]?.totalCount ?? 0),
+  };
+}
+
 async function getYearData(userId: string, year: string) {
   const yearStart = new Date(`${year}-01-01T00:00:00Z`);
   const now = new Date();
@@ -70,9 +94,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const mode = (sp.mode === 'year' ? 'year' : 'month') as 'month' | 'year';
   const selectedYear = selectedMonth.split('-')[0];
 
-  const [data, yearData] = await Promise.all([
+  const [data, yearData, obligations] = await Promise.all([
     getDashboardData(user.id, selectedMonth),
     mode === 'year' ? getYearData(user.id, selectedYear) : null,
+    getObligationsSummary(user.id),
   ]);
 
   const displayIncome  = mode === 'year' ? (yearData?.income ?? 0) : data.income;
@@ -126,9 +151,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             {mode === 'year' ? `Podsumowanie roku ${selectedYear}` : formatMonth(selectedMonth)}
           </p>
         </div>
-        <Suspense fallback={null}>
-          <DashboardMonthNav currentMonth={selectedMonth} mode={mode} />
-        </Suspense>
+        <div className="flex items-center gap-2">
+          <Suspense fallback={null}>
+            <DashboardMonthNav currentMonth={selectedMonth} mode={mode} />
+          </Suspense>
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Stats */}
@@ -192,6 +220,46 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 ? `Przekroczenie: ${formatCurrency(data.expense - data.planned)}`
                 : `Pozostało: ${formatCurrency(data.planned - data.expense)}`}
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Taxes & enforcement */}
+      {(obligations.taxTotalCount > 0 || obligations.enforcementTotalCount > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <Receipt className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Podatki</p>
+              </div>
+              <Link href="/taxes" className="text-xs text-[#01581E] hover:underline flex items-center gap-1">
+                Szczegóły <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <p className="text-xl font-bold text-foreground">{formatCurrency(obligations.taxDue)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {obligations.taxPendingCount > 0 ? `${obligations.taxPendingCount} do zapłaty` : 'Wszystko opłacone'}
+            </p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                  <Gavel className="w-4 h-4 text-red-600 dark:text-red-400" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Zajęcia egzekucyjne</p>
+              </div>
+              <Link href="/enforcement" className="text-xs text-[#01581E] hover:underline flex items-center gap-1">
+                Szczegóły <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <p className="text-xl font-bold text-foreground">{formatCurrency(obligations.enforcementRemaining)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {obligations.enforcementPendingCount > 0 ? `${obligations.enforcementPendingCount} aktywnych` : 'Brak aktywnych zajęć'}
+            </p>
           </div>
         </div>
       )}
