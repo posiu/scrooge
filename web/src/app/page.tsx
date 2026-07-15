@@ -1,55 +1,30 @@
 import Link from 'next/link';
 import {
-  TrendingUp,
-  TrendingDown,
   BarChart3,
   Brain,
   ShieldCheck,
-  FileStack,
   PieChart,
   Target,
   Gavel,
   Download,
+  LineChart,
+  TrendingUp,
   ArrowRight,
   CheckCircle2,
   Zap,
   Tag,
 } from 'lucide-react';
+import { MarketingNav } from '@/components/landing/MarketingNav';
+import { MarketingFooter } from '@/components/landing/MarketingFooter';
+import { ScreensCarousel } from '@/components/landing/ScreensCarousel';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#01581E] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-semibold text-foreground">Scrooge</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/pricing"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
-              >
-                Cennik
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
-              >
-                Zaloguj się
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav variant="home" />
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#01581E]/10 text-[#01581E] text-xs font-medium mb-6">
             <Zap className="w-3.5 h-3.5" />
@@ -64,7 +39,7 @@ export default function LandingPage() {
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
             Scrooge to aplikacja do zarządzania domowym budżetem. Budżet vs.
-            realizacja, trendy, zobowiązania, podatki, cele oszczędnościowe,
+            realizacja, zobowiązania, inwestycje, podatki, cele oszczędnościowe,
             AI asystent — wszystko w jednym miejscu, bezpieczne i prywatne.
           </p>
 
@@ -87,75 +62,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Dashboard preview mockup */}
+      {/* Screens carousel */}
       <section className="px-4 sm:px-6 lg:px-8 pb-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
-            {/* Fake browser bar */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-amber-400" />
-                <div className="w-3 h-3 rounded-full bg-green-400" />
-              </div>
-              <div className="flex-1 mx-4 bg-muted rounded-md px-3 py-1 text-xs text-muted-foreground">
-                app.scrooge.pl/dashboard
-              </div>
-            </div>
-            {/* App preview */}
-            <div className="flex h-64 sm:h-80">
-              {/* Sidebar */}
-              <div className="w-14 sm:w-48 bg-[#01581E] p-3 sm:p-4 shrink-0">
-                <div className="space-y-1 mt-4">
-                  {['Dashboard', 'Transakcje', 'Budżet', 'Konta', 'Zobowiązania', 'Wykresy', 'Trendy', 'AI Asystent'].map((item) => (
-                    <div
-                      key={item}
-                      className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 text-xs hover:bg-white/10 cursor-pointer"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Content */}
-              <div className="flex-1 p-4 sm:p-6 bg-background">
-                {/* Stats row */}
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  {[
-                    { label: 'Przychody', value: '8 200 zł', color: 'text-[#01581E]', icon: TrendingUp },
-                    { label: 'Wydatki', value: '5 430 zł', color: 'text-destructive', icon: TrendingDown },
-                    { label: 'Oszczędności', value: '2 770 zł', color: 'text-blue-500', icon: Target },
-                    { label: 'Zobowiązania', value: '3 aktywne', color: 'text-amber-500', icon: Gavel },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-card border border-border rounded-xl p-3">
-                      <p className="text-xs text-muted-foreground mb-1 truncate">{stat.label}</p>
-                      <p className={`text-xs sm:text-sm font-bold ${stat.color}`}>{stat.value}</p>
-                    </div>
-                  ))}
-                </div>
-                {/* Budget progress */}
-                <div className="bg-card border border-border rounded-xl p-3 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-muted-foreground">Realizacja budżetu</p>
-                    <p className="text-xs text-muted-foreground">72%</p>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full w-[72%] rounded-full bg-[#01581E]" />
-                  </div>
-                </div>
-                {/* Chart placeholder */}
-                <div className="h-16 sm:h-24 bg-muted/30 rounded-xl border border-border flex items-center justify-center">
-                  <BarChart3 className="w-8 h-8 text-muted-foreground/40" />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="max-w-3xl mx-auto text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+            Zobacz Scrooge w akcji
+          </h2>
+          <p className="text-muted-foreground">
+            Jedna aplikacja, pełny obraz Twoich finansów — od budżetu miesięcznego po portfel inwestycyjny.
+          </p>
         </div>
+        <ScreensCarousel />
       </section>
 
       {/* Features */}
-      <section className="px-4 sm:px-6 lg:px-8 py-24 bg-muted/30">
+      <section id="funkcje" className="px-4 sm:px-6 lg:px-8 py-24 bg-muted/30 scroll-mt-16">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -251,23 +172,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#01581E] rounded-md flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-medium text-foreground">Scrooge</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/pricing" className="hover:text-foreground transition-colors">
-              Cennik
-            </Link>
-            <span>Domowy Controlling · {new Date().getFullYear()}</span>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
@@ -277,7 +182,7 @@ const features = [
     icon: BarChart3,
     title: 'Budżet vs. Realizacja',
     description:
-      'Planuj budżet miesięczny i śledź realizację w czasie rzeczywistym. Natychmiastowe alerty przy przekroczeniu planu.',
+      'Planuj budżet miesięczny z szablonami i śledź realizację w czasie rzeczywistym. Natychmiastowe alerty przy przekroczeniu planu.',
   },
   {
     icon: Brain,
@@ -289,7 +194,13 @@ const features = [
     icon: Gavel,
     title: 'Zobowiązania, Podatki i Egzekucje',
     description:
-      'Śledź kredyty, raty i subskrypcje, rozliczenia podatkowe oraz zajęcia egzekucyjne — wszystko w jednym miejscu.',
+      'Śledź kredyty, pożyczki, raty i subskrypcje, rozliczenia podatkowe oraz zajęcia egzekucyjne — wszystko w jednym miejscu.',
+  },
+  {
+    icon: LineChart,
+    title: 'Inwestycje',
+    description:
+      'Śledź portfel: akcje, obligacje, ETF-y, kryptowaluty, metale szlachetne, lokaty i więcej — z jedną, zagregowaną wartością.',
   },
   {
     icon: Target,
@@ -316,12 +227,6 @@ const features = [
       'Zaimportuj historię transakcji z arkusza Excel. Deduplikacja i podgląd przed zapisem do bazy.',
   },
   {
-    icon: FileStack,
-    title: 'Szablony Budżetów',
-    description:
-      'Twórz szablony i generuj na ich podstawie plany na kolejne miesiące i lata. Hierarchiczne kategorie.',
-  },
-  {
     icon: ShieldCheck,
     title: 'Bezpieczeństwo',
     description:
@@ -338,7 +243,7 @@ const steps = [
   {
     title: 'Skonfiguruj kategorie i konta',
     description:
-      'Ustaw hierarchię kategorii (Jedzenie > Restauracje), dodaj swoje konta bankowe, gotówkę, kryptowaluty.',
+      'Ustaw hierarchię kategorii (Jedzenie > Restauracje), dodaj swoje konta bankowe, gotówkę, kryptowaluty i inwestycje.',
   },
   {
     title: 'Zaplanuj budżet',

@@ -7,10 +7,11 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, ArrowLeftRight, CalendarDays, BarChart3, TrendingUp,
   Landmark, HandCoins, Tags, FileStack, Map, Settings, LogOut,
-  ChevronRight, TrendingDown, Brain, Receipt, Gavel, ShieldCheck,
+  ChevronRight, Brain, Receipt, Gavel, ShieldCheck,
   Download, Target, LineChart,
 } from 'lucide-react';
 import { useState } from 'react';
+import { Logo } from './Logo';
 
 interface NavItem {
   label: string;
@@ -138,9 +139,7 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
       {/* Logo */}
       <div className="px-4 py-5 border-b border-sidebar-border shrink-0">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 bg-sidebar-accent rounded-lg flex items-center justify-center group-hover:bg-sidebar-accent/80 transition-colors">
-            <TrendingDown className="w-5 h-5 text-sidebar-foreground rotate-180" />
-          </div>
+          <Logo variant="inverted" showWordmark={false} iconClassName="w-8 h-8 shrink-0 group-hover:opacity-90 transition-opacity" />
           <div>
             <p className="text-sidebar-foreground font-semibold text-sm leading-none">Scrooge</p>
             <p className="text-sidebar-foreground/50 text-xs mt-0.5">Domowy Controlling</p>

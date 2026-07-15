@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Sidebar } from './Sidebar';
-import { Menu, X, TrendingDown, Moon, Sun } from 'lucide-react';
+import { Logo } from './Logo';
+import { Menu, X, Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -15,11 +16,8 @@ export function MobileNav({ userEmail, isAdmin = false }: { userEmail?: string |
     <>
       {/* Mobile top bar */}
       <div className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-border bg-background shrink-0">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-[#01581E] rounded-md flex items-center justify-center">
-            <TrendingDown className="w-4 h-4 text-white rotate-180" />
-          </div>
-          <span className="font-semibold text-sm text-foreground">Scrooge</span>
+        <Link href="/dashboard">
+          <Logo iconClassName="w-7 h-7" textClassName="font-semibold text-sm text-foreground" />
         </Link>
 
         <div className="flex items-center gap-2">

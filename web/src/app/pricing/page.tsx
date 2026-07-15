@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { TrendingUp, ArrowRight, ArrowLeft, Check, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { MarketingNav } from '@/components/landing/MarketingNav';
+import { MarketingFooter } from '@/components/landing/MarketingFooter';
 
 interface PlanFeature {
   label: string;
@@ -30,6 +32,7 @@ const plans: Plan[] = [
       { label: 'Wykresy i raporty', included: false },
       { label: 'Analiza trendów', included: false },
       { label: 'Zajęcia egzekucyjne', included: false },
+      { label: 'Zarządzanie inwestycjami', included: false },
       { label: 'Import danych z Excela', included: false },
     ],
   },
@@ -49,6 +52,7 @@ const plans: Plan[] = [
       { label: 'Szablony budżetów', included: true },
       { label: 'AI Asystent finansowy', included: false },
       { label: 'Zajęcia egzekucyjne', included: false },
+      { label: 'Zarządzanie inwestycjami', included: false },
     ],
   },
   {
@@ -61,6 +65,8 @@ const plans: Plan[] = [
       { label: 'Wszystko z planu Basic', included: true },
       { label: 'AI Asystent finansowy', included: true },
       { label: 'Zajęcia egzekucyjne', included: true },
+      { label: 'Zarządzanie inwestycjami', included: true },
+      { label: 'Śledzenie portfela: akcje, obligacje, ETF, krypto i więcej', included: true },
     ],
   },
 ];
@@ -68,35 +74,7 @@ const plans: Plan[] = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#01581E] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-semibold text-foreground">Scrooge</span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:flex items-center gap-1.5"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Strona główna
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
-              >
-                Zaloguj się
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav variant="pricing" />
 
       {/* Header */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
@@ -172,6 +150,8 @@ export default function PricingPage() {
           Szczegóły planów płatnych oraz sposób rozliczenia zostaną doprecyzowane wkrótce.
         </p>
       </section>
+
+      <MarketingFooter />
     </div>
   );
 }
