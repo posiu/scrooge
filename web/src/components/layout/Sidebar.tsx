@@ -8,7 +8,7 @@ import {
   LayoutDashboard, ArrowLeftRight, CalendarDays, BarChart3, TrendingUp,
   Landmark, HandCoins, Tags, FileStack, Map, Settings, LogOut,
   ChevronRight, Brain, Receipt, Gavel, ShieldCheck,
-  Download, Target, LineChart,
+  Download, Target, LineChart, Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Logo } from './Logo';
@@ -54,6 +54,7 @@ const toolItems: NavItem[] = [
 ];
 
 const adminItems: NavItem[] = [
+  { label: 'Użytkownicy', href: '/admin/users', icon: Users },
   { label: 'Kategorie', href: '/admin/categories', icon: Tags },
   { label: 'Szablony budżetów', href: '/admin/templates', icon: FileStack },
   { label: 'Panel admina', href: '/admin', icon: ShieldCheck },

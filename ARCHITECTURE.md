@@ -47,7 +47,7 @@ budgets            — Plany budżetowe (miesiąc × kategoria)
 budget_templates   — Szablony budżetów
 budget_template_items — Pozycje szablonu
 liabilities        — Zobowiązania (kredyty, pożyczki)
-user_settings      — Ustawienia użytkownika (isAdmin, itd.)
+user_settings      — Profil i ustawienia użytkownika (imię, nazwisko, plan, isAdmin, itd.)
 ai_chat_sessions   — Sesje AI asystenta
 feature_requests   — System propozycji funkcji
 ```
@@ -93,6 +93,7 @@ goal_deposits      — Historia wpłat na cel
 | `interest_type` | statutory, statutory_commercial, contractual, tax, tax_delayed, custom |
 | `enforcement_status` | active, partially_paid, satisfied, appealed, suspended |
 | `goal_status` | active, completed, cancelled |
+| `subscription_plan` | free, basic, pro |
 
 ---
 
@@ -202,6 +203,11 @@ Wszystkie endpointy wymagają aktywnej sesji Supabase (cookie-based).
 |--------|------|------|
 | POST | `/api/admin/demo` | Załaduj dane demo |
 | DELETE | `/api/admin/demo` | Usuń dane demo |
+| GET | `/api/admin/users` | Lista użytkowników (auth.users + userSettings, przez Supabase Admin API) |
+| POST | `/api/admin/users` | Utwórz użytkownika (email, imię, nazwisko, waluta, plan) |
+| PUT | `/api/admin/users/[id]` | Edytuj profil użytkownika (imię, nazwisko, waluta, plan) |
+| DELETE | `/api/admin/users/[id]` | Usuń konto użytkownika (dane finansowe pozostają) |
+| PUT | `/api/admin/users/[id]/access` | Zablokuj / zawieś czasowo / odblokuj dostęp (`action: block\|suspend\|unblock`) |
 
 ---
 
@@ -248,6 +254,7 @@ Migracje: `src/lib/db/migrations/`
 | 0002 | add_savings_goals | Tabele: savings_goals, goal_deposits |
 | 0003 | abnormal_wallop | Enum `investment_category`, `liability_type.{personal_loan,bank_loan,company_loan}` |
 | 0004 | special_wolverine | Tabela `investments`; cofnięcie `account_type.investment` i kolumny `accounts.investment_category` (inwestycje przeniesione do własnej tabeli) |
+| 0005 | cool_squadron_sinister | Enum `subscription_plan`; kolumny `user_settings.{first_name,last_name,plan}` |
 
 ---
 
@@ -256,6 +263,7 @@ Migracje: `src/lib/db/migrations/`
 - Wszystkie API endpointy weryfikują sesję via `supabase.auth.getUser()`
 - Dane użytkownika izolowane przez `WHERE user_id = :userId`
 - Kategorie systemowe chronione przed usunięciem (`isSystem = true`)
-- Panel admina gated przez `userSettings.isAdmin`
+- Panel admina gated przez `userSettings.isAdmin` — sprawdzane zarówno w `src/app/(app)/admin/layout.tsx` (server-side redirect), jak i w każdym API route przez `requireAdmin()` (`src/lib/auth/admin.ts`)
+- Zarządzanie kontami (tworzenie, usuwanie, blokowanie, zawieszanie) odbywa się przez Supabase Auth Admin API (`SUPABASE_SERVICE_ROLE_KEY`, `createAdminClient()` w `src/lib/supabase/server.ts`) — blokada/zawieszenie to ustawienie `auth.users.banned_until` (`ban_duration`), bez duplikowania stanu w naszym schemacie
 - Import ograniczony do 1000 wierszy na raz
 - Eksport ograniczony do zalogowanego użytkownika

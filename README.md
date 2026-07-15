@@ -142,6 +142,15 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
 ### 🤖 AI Asystent (`/ai-chat`)
 - Pytania o budżet, trendy, porady finansowe
 
+### 🛡️ Panel admina (`/admin`, tylko `isAdmin=true`)
+- **Użytkownicy** (`/admin/users`) — lista wszystkich kont (dane z Supabase Auth + profil z `user_settings`)
+  - Dodawanie kont (email, imię, opcjonalnie nazwisko, waluta domyślna, plan)
+  - Edycja profilu i zmiana planu abonamentowego (Free / Basic / Pro) w górę i w dół
+  - Blokowanie i czasowe zawieszanie dostępu (np. po nieopłaceniu abonamentu) — bez usuwania danych
+  - Usuwanie kont (dane finansowe użytkownika pozostają w bazie)
+- Zarządzanie kategoriami systemowymi i szablonami budżetów
+- Ładowanie / czyszczenie danych demonstracyjnych
+
 ### 📱 PWA
 - Aplikacja instalowalna na telefonie / komputerze
 - Manifest: `/manifest.json`
@@ -171,7 +180,8 @@ web/
 │   │   │   ├── ai-chat/
 │   │   │   ├── settings/
 │   │   │   ├── roadmap/
-│   │   │   └── admin/
+│   │   │   └── admin/            # layout.tsx — server-side isAdmin guard
+│   │   │       ├── users/
 │   │   │       ├── categories/
 │   │   │       ├── templates/
 │   │   │       └── page.tsx    # Panel demo data
@@ -189,7 +199,9 @@ web/
 │   │   │   ├── enforcement/ (+ /[id] + /[id]/payments)
 │   │   │   ├── liabilities/ (+ /[id])
 │   │   │   ├── transactions/(+ /[id])
-│   │   │   └── admin/demo/
+│   │   │   └── admin/
+│   │   │       ├── demo/
+│   │   │       └── users/   (+ /[id], /[id]/access)
 │   │   └── (auth)/          # Strony logowania/rejestracji
 │   ├── components/
 │   │   ├── layout/
@@ -208,7 +220,9 @@ web/
 │       │   ├── index.ts         # Singleton postgres connection
 │       │   ├── schema.ts        # Drizzle schema
 │       │   └── migrations/
-│       ├── supabase/
+│       ├── supabase/            # server.ts eksportuje też createAdminClient() (service role)
+│       ├── auth/
+│       │   └── admin.ts         # requireAdmin() — wspólny guard dla API admina
 │       └── utils.ts
 └── public/
     └── manifest.json            # PWA manifest

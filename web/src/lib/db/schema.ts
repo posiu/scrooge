@@ -56,12 +56,19 @@ export const enforcementStatusEnum = pgEnum('enforcement_status', [
   'active', 'partially_paid', 'satisfied', 'appealed', 'suspended',
 ]);
 
+export const subscriptionPlanEnum = pgEnum('subscription_plan', [
+  'free', 'basic', 'pro',
+]);
+
 // ─── User Settings ────────────────────────────────────────────────────────────
 
 export const userSettings = pgTable('user_settings', {
   id:          uuid('id').primaryKey().defaultRandom(),
   userId:      uuid('user_id').notNull().unique(),
   isAdmin:     boolean('is_admin').notNull().default(false),
+  firstName:   text('first_name').notNull().default(''),
+  lastName:    text('last_name'),
+  plan:        subscriptionPlanEnum('plan').notNull().default('free'),
   currency:    text('currency').notNull().default('PLN'),
   locale:      text('locale').notNull().default('pl-PL'),
   theme:       text('theme').notNull().default('system'),
