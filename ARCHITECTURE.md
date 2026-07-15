@@ -151,6 +151,14 @@ Wszystkie endpointy wymagają aktywnej sesji Supabase (cookie-based).
 | DELETE | `/api/enforcement/[id]` | Usuń zajęcie |
 | POST | `/api/enforcement/[id]/payments` | Dodaj spłatę częściową |
 
+#### Zobowiązania
+| Method | Path | Opis |
+|--------|------|------|
+| GET | `/api/liabilities` | Lista zobowiązań |
+| POST | `/api/liabilities` | Utwórz zobowiązanie |
+| PUT | `/api/liabilities/[id]` | Edytuj zobowiązanie |
+| DELETE | `/api/liabilities/[id]` | Usuń zobowiązanie |
+
 #### Cele oszczędnościowe
 | Method | Path | Opis |
 |--------|------|------|

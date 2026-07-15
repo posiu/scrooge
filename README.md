@@ -308,6 +308,8 @@ Manifest: [`/manifest.json`](./web/public/manifest.json)
 | ✅ DONE | Dashboard z przełącznikiem miesięcy i widokiem rocznym |
 | ✅ DONE | PWA manifest |
 | ✅ DONE | Interaktywne kategorie i szablony budżetów |
+| ✅ DONE | Pełna edycja i usuwanie elementów (konta, transakcje, zobowiązania, podatki, zajęcia) |
+| ✅ DONE | Klikalny kalendarz w widoku budżetu z przejściem do dnia transakcji |
 | 🔄 IN PROGRESS | AI asystent finansowy |
 | 📋 PLANNED | Transakcje cykliczne (subskrypcje, raty) |
 | 📋 PLANNED | Powiadomienia o przekroczeniu budżetu |
