@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Statutory interest rates (Polish law, art. 481 KC / Ordynacja podatkowa)
-export const STATUTORY_RATES = {
+const STATUTORY_RATES = {
   statutory:             11.25, // odsetki ustawowe za opóźnienie (art. 481 KC)
   statutory_commercial:  13.25, // odsetki ustawowe za opóźnienie w transakcjach handlowych
   tax:                   14.50, // odsetki podatkowe (Ordynacja podatkowa)
