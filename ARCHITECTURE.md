@@ -79,6 +79,12 @@ savings_goals      — Cele oszczędnościowe
 goal_deposits      — Historia wpłat na cel
 ```
 
+### Tabela waitlisty
+
+```
+waitlist_entries   — Zapisy na listę oczekujących (przed publicznym startem)
+```
+
 ### Enumy
 
 | Enum | Wartości |
@@ -191,6 +197,11 @@ Wszystkie endpointy wymagają aktywnej sesji Supabase (cookie-based).
 | POST | `/api/import` | Importuj transakcje (JSON rows) |
 | GET | `/api/export?format=excel&type=transactions&month=YYYY-MM` | Eksport Excel/CSV |
 
+#### Waitlist (publiczny, bez autoryzacji)
+| Method | Path | Opis |
+|--------|------|------|
+| POST | `/api/waitlist` | Zapisz się na listę oczekujących (email + imię) |
+
 #### Wykresy
 | Method | Path | Opis |
 |--------|------|------|
@@ -208,6 +219,8 @@ Wszystkie endpointy wymagają aktywnej sesji Supabase (cookie-based).
 | PUT | `/api/admin/users/[id]` | Edytuj profil użytkownika (imię, nazwisko, waluta, plan) |
 | DELETE | `/api/admin/users/[id]` | Usuń konto użytkownika (dane finansowe pozostają) |
 | PUT | `/api/admin/users/[id]/access` | Zablokuj / zawieś czasowo / odblokuj dostęp (`action: block\|suspend\|unblock`) |
+| GET | `/api/admin/waitlist` | Lista zapisów na waitlistę |
+| DELETE | `/api/admin/waitlist/[id]` | Usuń wpis z waitlisty |
 
 ---
 
@@ -255,6 +268,7 @@ Migracje: `src/lib/db/migrations/`
 | 0003 | abnormal_wallop | Enum `investment_category`, `liability_type.{personal_loan,bank_loan,company_loan}` |
 | 0004 | special_wolverine | Tabela `investments`; cofnięcie `account_type.investment` i kolumny `accounts.investment_category` (inwestycje przeniesione do własnej tabeli) |
 | 0005 | cool_squadron_sinister | Enum `subscription_plan`; kolumny `user_settings.{first_name,last_name,plan}` |
+| 0006 | thankful_doctor_faustus | Tabela `waitlist_entries` |
 
 ---
 
@@ -267,3 +281,25 @@ Migracje: `src/lib/db/migrations/`
 - Zarządzanie kontami (tworzenie, usuwanie, blokowanie, zawieszanie) odbywa się przez Supabase Auth Admin API (`SUPABASE_SERVICE_ROLE_KEY`, `createAdminClient()` w `src/lib/supabase/server.ts`) — blokada/zawieszenie to ustawienie `auth.users.banned_until` (`ban_duration`), bez duplikowania stanu w naszym schemacie
 - Import ograniczony do 1000 wierszy na raz
 - Eksport ograniczony do zalogowanego użytkownika
+
+---
+
+## Wdrożenie i podział domen
+
+Jeden deployment na Vercel obsługuje dwie domeny wskazujące na ten sam projekt:
+
+| Domena | Rola |
+|--------|------|
+| `usescrooge.com` (+ `www.`) | Landing / marketing (`/`, `/pricing`, `/roadmap`) |
+| `app.usescrooge.com` | Właściwa aplikacja (logowanie, dashboard, wszystko poza marketingiem) |
+
+Podział realizuje `src/middleware.ts` na podstawie nagłówka `Host` (stała `APEX_HOST`/`APP_HOST`/`MARKETING_PATHS`):
+- Na domenie apex każda ścieżka spoza `MARKETING_PATHS` (i spoza `/api/`, `/auth/`, plików statycznych) jest przekierowywana (307) na `app.usescrooge.com` z zachowaniem ścieżki.
+- Na `app.usescrooge.com` pusty root (`/`) przekierowuje na `/login`.
+- Logika jest nieaktywna dla każdego innego hosta (localhost, podglądy Vercel) — `host` musi dokładnie pasować do jednej z dwóch domen produkcyjnych.
+
+**Ważne:** `middleware.ts` musi leżeć w `src/middleware.ts` (obok `src/app/`), nie w katalogu głównym `web/` — inaczej Next.js go w ogóle nie buduje (brak wpisu `ƒ Middleware` w outpucie `next build`) i cała logika (w tym ten podział domen) po cichu nie działa — aplikacja mimo to wygląda na chronioną, bo `(app)/layout.tsx` ma niezależne, własne sprawdzenie sesji.
+
+Endpointy pod `/api/*` są celowo wyłączone ze sprawdzania sesji w middleware (przekierowanie do HTML `/login` zepsułoby każdy `fetch()` z frontendu) — każdy route sam weryfikuje `supabase.auth.getUser()` i zwraca JSON 401.
+
+`/roadmap` leży poza grupą `(app)/` (własny `src/app/roadmap/layout.tsx`), żeby faktycznie działać jako publiczna trasa zgodnie z `PUBLIC_PATHS`/`MARKETING_PATHS`: zalogowani widzą pełną powłokę aplikacji (`AppShell` — Sidebar/MobileNav, współdzielona z `(app)/layout.tsx`), goście dostają lekki pasek z samym logo. Głosowanie (`POST /api/feature-requests/[id]/vote`) nadal wymaga logowania, przeglądanie i zgłaszanie pomysłów — nie.

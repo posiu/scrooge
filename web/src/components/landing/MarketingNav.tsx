@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { Bell, ArrowLeft } from 'lucide-react';
 import { Logo } from '@/components/layout/Logo';
+import { WaitlistButton } from './WaitlistButton';
 
 export function MarketingNav({ variant = 'home' }: { variant?: 'home' | 'pricing' }) {
   return (
@@ -35,13 +36,10 @@ export function MarketingNav({ variant = 'home' }: { variant?: 'home' | 'pricing
                 Strona główna
               </Link>
             )}
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
-            >
-              Zaloguj się
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <WaitlistButton className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors">
+              <Bell className="w-4 h-4" />
+              Powiadom mnie
+            </WaitlistButton>
           </div>
         </div>
       </div>

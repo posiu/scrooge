@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
+import { WaitlistButton } from '@/components/landing/WaitlistButton';
 
 interface PlanFeature {
   label: string;
@@ -132,16 +132,15 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
-                href="/login"
-                className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+              <WaitlistButton
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors w-full ${
                   plan.highlighted
                     ? 'bg-[#01581E] text-white hover:bg-[#01581E]/90'
                     : 'border border-border text-foreground hover:bg-muted'
                 }`}
               >
                 {plan.cta}
-              </Link>
+              </WaitlistButton>
             </div>
           ))}
         </div>

@@ -240,6 +240,15 @@ export const aiChatSessions = pgTable('ai_chat_sessions', {
   index('ai_chat_sessions_user_id_idx').on(t.userId),
 ]);
 
+// ─── Waitlist ─────────────────────────────────────────────────────────────────
+
+export const waitlistEntries = pgTable('waitlist_entries', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  email:     text('email').notNull().unique(),
+  firstName: text('first_name').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ─── Feature Requests ─────────────────────────────────────────────────────────
 
 export const featureRequests = pgTable('feature_requests', {

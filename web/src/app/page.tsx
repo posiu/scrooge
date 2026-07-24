@@ -17,6 +17,7 @@ import {
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { ScreensCarousel } from '@/components/landing/ScreensCarousel';
+import { WaitlistButton } from '@/components/landing/WaitlistButton';
 
 export default function LandingPage() {
   return (
@@ -44,13 +45,10 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#01581E] text-white font-medium hover:bg-[#01581E]/90 transition-all hover:shadow-lg hover:shadow-[#01581E]/20"
-            >
-              Zaloguj się do aplikacji
+            <WaitlistButton className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#01581E] text-white font-medium hover:bg-[#01581E]/90 transition-all hover:shadow-lg hover:shadow-[#01581E]/20">
+              Powiadom mnie
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </WaitlistButton>
             <Link
               href="/pricing"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors"
@@ -160,15 +158,12 @@ export default function LandingPage() {
             Gotowy na kontrolę finansów?
           </h2>
           <p className="text-muted-foreground mb-8">
-            Zaloguj się i zacznij śledzić swój budżet już dziś.
+            Scrooge startuje wkrótce. Zapisz się na waitlistę i bądź pierwszy, gdy otworzymy dostęp.
           </p>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#01581E] text-white font-medium text-lg hover:bg-[#01581E]/90 transition-all hover:shadow-xl hover:shadow-[#01581E]/25"
-          >
-            Zaloguj się
+          <WaitlistButton className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#01581E] text-white font-medium text-lg hover:bg-[#01581E]/90 transition-all hover:shadow-xl hover:shadow-[#01581E]/25">
+            Powiadom mnie
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </WaitlistButton>
         </div>
       </section>
 

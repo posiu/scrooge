@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  Database, Trash2, Loader2, CheckCircle2, AlertTriangle, RefreshCw, Tags, FileStack, Users,
+  Database, Trash2, Loader2, CheckCircle2, AlertTriangle, RefreshCw, Tags, FileStack, Users, ListChecks,
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -50,9 +50,10 @@ export default function AdminPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[
           { href: '/admin/users', icon: Users, label: 'Użytkownicy', desc: 'Zarządzaj kontami, planami i dostępem' },
+          { href: '/admin/waitlist', icon: ListChecks, label: 'Waitlist', desc: 'Osoby zapisane na powiadomienie o starcie' },
           { href: '/admin/categories', icon: Tags, label: 'Zarządzaj kategoriami', desc: 'Dodaj, edytuj i usuń kategorie transakcji' },
           { href: '/admin/templates', icon: FileStack, label: 'Szablony budżetów', desc: 'Konfiguruj domyślne szablony budżetów' },
         ].map(item => (

@@ -46,16 +46,16 @@ scrooge/
     │   │   ├── forms/           # Formularze (AddTransactionButton itp.)
     │   │   ├── charts/          # Wykresy Recharts
     │   │   └── ui/              # Toaster i inne atomowe komponenty UI
-    │   └── lib/
-    │       ├── db/
-    │       │   ├── schema.ts    # Drizzle schema (wszystkie tabele)
-    │       │   ├── index.ts     # Instancja Drizzle (postgres + prepare: false)
-    │       │   └── migrations/  # Wygenerowane migracje SQL
-    │       ├── supabase/
-    │       │   ├── client.ts    # createBrowserClient (komponenty klienckie)
-    │       │   └── server.ts    # createServerClient (Server Components / API)
-    │       └── utils.ts         # cn(), formatCurrency, getPolishHolidays() itp.
-    ├── middleware.ts             # Session refresh + auth guard
+    │   ├── lib/
+    │   │   ├── db/
+    │   │   │   ├── schema.ts    # Drizzle schema (wszystkie tabele)
+    │   │   │   ├── index.ts     # Instancja Drizzle (postgres + prepare: false)
+    │   │   │   └── migrations/  # Wygenerowane migracje SQL
+    │   │   ├── supabase/
+    │   │   │   ├── client.ts    # createBrowserClient (komponenty klienckie)
+    │   │   │   └── server.ts    # createServerClient (Server Components / API)
+    │   │   └── utils.ts         # cn(), formatCurrency, getPolishHolidays() itp.
+    │   └── middleware.ts        # Session refresh + auth guard + podział domen (musi być w src/, nie w web/)
     ├── next.config.ts
     ├── tailwind.config.ts
     ├── drizzle.config.ts        # dialect: postgresql, schema: src/lib/db/schema.ts
@@ -133,8 +133,9 @@ Kredyty, raty, subskrypcje.
 - Zawsze pokaż podgląd przed insertem i czekaj na potwierdzenie
 
 ### Middleware / Auth Guard
-- `web/middleware.ts` — odświeża session Supabase i przekierowuje niezalogowanych
-- Chronione trasy: wszystkie poza `/`, `/login`, `/roadmap`, `/auth/callback`
+- `web/src/middleware.ts` — odświeża session Supabase, przekierowuje niezalogowanych i dzieli ruch między domeną `usescrooge.com` (marketing) a `app.usescrooge.com` (aplikacja). Musi leżeć w `src/`, nie w `web/` — inaczej Next.js go nie buduje
+- Chronione trasy: wszystkie poza `/`, `/login`, `/roadmap`, `/pricing`, `/auth/callback`
+- `/roadmap` jest publiczny mimo że pokazuje pełną powłokę appki zalogowanym — leży poza `(app)/`, ma własny `layout.tsx` (`src/app/roadmap/layout.tsx`) z opcjonalnym auth
 
 ## Konwencje nazewnictwa
 

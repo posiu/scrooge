@@ -32,6 +32,8 @@ Scrooge to kompleksowy system domowego controllingu, umożliwiający:
 - Eksport raportów do Excel/CSV
 - AI asystent finansowy
 
+> **Status: przed publicznym startem.** Strona główna (`/`) i cennik (`/pricing`) zbierają zapisy na waitlistę (`/api/waitlist`) zamiast prowadzić do logowania — przycisk logowania jest celowo ukryty z UI. Mechanizm logowania (`/login`) działa bez zmian, dostępny po ręcznym wpisaniu adresu.
+
 ---
 
 ## Stack technologiczny
@@ -148,6 +150,7 @@ Aplikacja będzie dostępna pod adresem: **http://localhost:3000**
   - Edycja profilu i zmiana planu abonamentowego (Free / Basic / Pro) w górę i w dół
   - Blokowanie i czasowe zawieszanie dostępu (np. po nieopłaceniu abonamentu) — bez usuwania danych
   - Usuwanie kont (dane finansowe użytkownika pozostają w bazie)
+- **Waitlist** (`/admin/waitlist`) — lista zapisów z formularza „Powiadom mnie” na stronie głównej i cenniku, z kopiowaniem wszystkich adresów email i usuwaniem wpisów
 - Zarządzanie kategoriami systemowymi i szablonami budżetów
 - Ładowanie / czyszczenie danych demonstracyjnych
 
@@ -179,12 +182,13 @@ web/
 │   │   │   ├── trends/
 │   │   │   ├── ai-chat/
 │   │   │   ├── settings/
-│   │   │   ├── roadmap/
 │   │   │   └── admin/            # layout.tsx — server-side isAdmin guard
 │   │   │       ├── users/
+│   │   │       ├── waitlist/
 │   │   │       ├── categories/
 │   │   │       ├── templates/
 │   │   │       └── page.tsx    # Panel demo data
+│   │   ├── roadmap/         # Publiczna — poza (app), własny layout.tsx (opcjonalne auth)
 │   │   ├── api/             # API Route Handlers
 │   │   │   ├── accounts/
 │   │   │   ├── investments/ (+ /[id])
@@ -199,15 +203,23 @@ web/
 │   │   │   ├── enforcement/ (+ /[id] + /[id]/payments)
 │   │   │   ├── liabilities/ (+ /[id])
 │   │   │   ├── transactions/(+ /[id])
+│   │   │   ├── waitlist/    # POST — publiczny, bez autoryzacji
 │   │   │   └── admin/
 │   │   │       ├── demo/
-│   │   │       └── users/   (+ /[id], /[id]/access)
+│   │   │       ├── users/   (+ /[id], /[id]/access)
+│   │   │       └── waitlist/(+ /[id])
 │   │   └── (auth)/          # Strony logowania/rejestracji
 │   ├── components/
 │   │   ├── layout/
+│   │   │   ├── AppShell.tsx     # Sidebar + MobileNav + main — współdzielone przez (app) i /roadmap
 │   │   │   ├── Sidebar.tsx      # Menu boczne (isAdmin-gated)
 │   │   │   ├── MobileNav.tsx
 │   │   │   └── Header.tsx
+│   │   ├── landing/             # Komponenty strony głównej / cennika
+│   │   │   ├── MarketingNav.tsx
+│   │   │   ├── MarketingFooter.tsx
+│   │   │   ├── ScreensCarousel.tsx
+│   │   │   └── WaitlistButton.tsx  # Przycisk + modal zapisu na waitlistę
 │   │   ├── charts/
 │   │   │   ├── DashboardCharts.tsx
 │   │   │   ├── ReportExpenseStructure.tsx
