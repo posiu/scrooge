@@ -281,6 +281,8 @@ Migracje: `src/lib/db/migrations/`
 - Zarządzanie kontami (tworzenie, usuwanie, blokowanie, zawieszanie) odbywa się przez Supabase Auth Admin API (`SUPABASE_SERVICE_ROLE_KEY`, `createAdminClient()` w `src/lib/supabase/server.ts`) — blokada/zawieszenie to ustawienie `auth.users.banned_until` (`ban_duration`), bez duplikowania stanu w naszym schemacie
 - Import ograniczony do 1000 wierszy na raz
 - Eksport ograniczony do zalogowanego użytkownika
+- **Next.js: pilnuj wersji.** 15.1.7 miał krytyczne RCE (CVE-2025-66478, CVSS 10.0) i krytyczne ominięcie autoryzacji w middleware (GHSA-f82v-jwr5-mffw, CVSS 9.1) — załatane w 15.5.21 (2026-07-16). Sprawdzaj `npm audit` przy większych zmianach.
+- `npm audit` (2026-07-16) pokazuje dodatkowo m.in. `xlsx` (HIGH, brak fixa od SheetJS od dawna — używany tylko do importu Excela, dane wejściowe od zalogowanego użytkownika), `drizzle-orm`, `ws`, `lodash`, `postcss`, `sharp`, `nodemailer` (HIGH) oraz `shell-quote` (CRITICAL, ale wyłącznie transitive dep `drizzle-kit` — dev-only CLI, nie wchodzi do buildu runtime). Do przeglądu osobno, niezależnie od patcha Next.js.
 
 ---
 

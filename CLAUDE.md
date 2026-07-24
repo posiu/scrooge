@@ -7,7 +7,7 @@ Punkt odniesienia: **domowy controlling**. Budżet vs. realizacja, trendy, przek
 
 ## Stack
 
-- **Framework**: Next.js 15.1.7 (App Router) — frontend + API routes w jednym projekcie
+- **Framework**: Next.js 15.5.21 (App Router) — frontend + API routes w jednym projekcie
 - **Auth**: Supabase Auth (OTP / magic link, bez hasła)
 - **Baza danych**: Supabase PostgreSQL (w chmurze) — dane dostępne na każdym urządzeniu
 - **ORM**: Drizzle ORM (type-safe, `drizzle-orm/pg-core`, connection pooling przez Supabase Transaction Pool)
