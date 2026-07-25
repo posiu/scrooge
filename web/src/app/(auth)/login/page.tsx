@@ -16,6 +16,8 @@ import {
 type Step = 'email' | 'otp' | 'success';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
+// Must match the "Email OTP Length" setting in Supabase Dashboard → Authentication.
+const OTP_LENGTH = 8;
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -79,7 +81,7 @@ function LoginForm() {
 
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (otp.length !== 6) return;
+    if (otp.length !== OTP_LENGTH) return;
 
     setLoading(true);
     setError(null);
@@ -260,7 +262,7 @@ function LoginForm() {
                   Sprawdź email
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  Wysłaliśmy 6-cyfrowy kod na{' '}
+                  Wysłaliśmy {OTP_LENGTH}-cyfrowy kod na{' '}
                   <span className="text-foreground font-medium">{email}</span>.
                   Kod jest ważny przez 10 minut.
                 </p>
@@ -275,11 +277,11 @@ function LoginForm() {
                     id="otp"
                     type="text"
                     inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
+                    pattern={`[0-9]{${OTP_LENGTH}}`}
+                    maxLength={OTP_LENGTH}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="000000"
+                    placeholder={'0'.repeat(OTP_LENGTH)}
                     required
                     autoComplete="one-time-code"
                     className={cn(
@@ -298,7 +300,7 @@ function LoginForm() {
 
                 <button
                   type="submit"
-                  disabled={loading || otp.length !== 6}
+                  disabled={loading || otp.length !== OTP_LENGTH}
                   className={cn(
                     'w-full py-3 px-4 rounded-lg font-medium text-white',
                     'bg-[#01581E] hover:bg-[#01581E]/90',
