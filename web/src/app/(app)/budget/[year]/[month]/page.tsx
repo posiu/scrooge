@@ -7,6 +7,7 @@ import { formatCurrency, formatMonth, getPolishHolidays } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import { BudgetProgress } from '@/components/charts/BudgetProgress';
 import { AddBudgetButton } from '@/components/forms/AddBudgetButton';
+import { EditBudgetButton } from '@/components/forms/EditBudgetButton';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
@@ -166,6 +167,13 @@ export default async function MonthlyBudgetPage({ params }: Props) {
                         {formatCurrency(row.actual)}
                       </span>
                       <span className="text-muted-foreground">/ {formatCurrency(row.planned)}</span>
+                      <EditBudgetButton
+                        categoryId={row.categoryId}
+                        categoryName={row.category?.name ?? 'Bez kategorii'}
+                        month={data.monthStr}
+                        plannedAmount={row.planned}
+                        notes={row.notes}
+                      />
                     </div>
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
