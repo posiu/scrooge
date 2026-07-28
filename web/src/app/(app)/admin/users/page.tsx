@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Users, Plus, Pencil, Trash2, Loader2, X, Check, Ban, ShieldOff, Clock, ShieldCheck,
+  Users, Plus, Pencil, Trash2, Loader2, X, Check, Ban, ShieldOff, Clock, ShieldCheck, KeyRound,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 type Plan = 'free' | 'basic' | 'pro';
@@ -116,6 +117,16 @@ export default function AdminUsersPage() {
     load();
   }
 
+  async function handleResetPassword(u: AdminUser) {
+    if (!confirm(`Zresetować hasło dla "${u.email}"?\n\nUstawimy losowe, nigdzie niezapisywane hasło — dotychczasowe logowanie hasłem (jeśli było ustawione) przestanie działać. Logowanie kodem e-mail (OTP) nie zostanie naruszone.`)) return;
+    const res = await fetch(`/api/admin/users/${u.id}/reset-password`, { method: 'POST' });
+    if (res.ok) {
+      toast.success(`Hasło dla ${u.email} zostało zresetowane`);
+    } else {
+      toast.error('Nie udało się zresetować hasła');
+    }
+  }
+
   async function handleSuspend() {
     if (!suspendTarget) return;
     await fetch(`/api/admin/users/${suspendTarget.id}/access`, {
@@ -196,6 +207,9 @@ export default function AdminUsersPage() {
                   <div className="flex items-center gap-1 shrink-0 ml-auto">
                     <button onClick={() => openEdit(u)} title="Edytuj" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                       <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleResetPassword(u)} title="Zresetuj hasło" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                      <KeyRound className="w-3.5 h-3.5" />
                     </button>
                     {isBlocked ? (
                       <button onClick={() => handleUnblock(u)} title="Odblokuj" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-[#01581E] transition-colors">
