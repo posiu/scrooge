@@ -5,6 +5,7 @@ import { transactions, budgets, accounts, liabilities } from '@/lib/db/schema';
 import { eq, and, isNull, gte, lte, sum, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { promises as dns } from 'dns';
+import { Agent, fetch as undiciFetch } from 'undici';
 
 const RequestSchema = z.object({
   messages: z.array(z.object({
@@ -23,15 +24,21 @@ const FETCH_TIMEOUT_MS = 30_000;
 
 // Blocks SSRF via a user-supplied "custom" endpoint: loopback, private/link-local
 // ranges (incl. cloud metadata 169.254.169.254), and non-HTTPS targets. DNS is
-// resolved and the actual IP checked too, to catch DNS-rebinding attempts —
-// checking the hostname string alone isn't enough.
+// resolved and the actual IP checked too — checking the hostname string alone
+// isn't enough (e.g. a domain the attacker controls resolving to 127.0.0.1).
 function isPrivateOrReservedIp(ip: string): boolean {
-  if (ip === '::1') return true;
-  const lower = ip.toLowerCase();
-  if (lower.startsWith('fe80:')) return true; // IPv6 link-local
-  if (lower.startsWith('fc') || lower.startsWith('fd')) return true; // IPv6 unique-local
+  let candidate = ip.toLowerCase();
+  // Unwrap IPv4-mapped/-compatible IPv6 (::ffff:a.b.c.d or ::a.b.c.d) to the
+  // embedded IPv4 address — otherwise splitting on '.' below yields a NaN
+  // segment and a blocked IPv4 target slips through disguised as an AAAA record.
+  const mapped = candidate.match(/^::(?:ffff:)?(\d+\.\d+\.\d+\.\d+)$/);
+  if (mapped) candidate = mapped[1];
 
-  const parts = ip.split('.').map(Number);
+  if (candidate === '::1') return true;
+  if (candidate.startsWith('fe80:')) return true; // IPv6 link-local
+  if (candidate.startsWith('fc') || candidate.startsWith('fd')) return true; // IPv6 unique-local
+
+  const parts = candidate.split('.').map(Number);
   if (parts.length !== 4 || parts.some((p) => Number.isNaN(p))) return false;
   const [a, b] = parts;
   if (a === 127) return true;                        // loopback
@@ -43,7 +50,10 @@ function isPrivateOrReservedIp(ip: string): boolean {
   return false;
 }
 
-async function assertSafeEndpoint(rawUrl: string): Promise<void> {
+// Validates the endpoint and returns the exact IPs it resolved to, so the
+// caller can pin the actual request to them — re-resolving at connect time
+// would open a DNS-rebinding gap (a different IP the second time around).
+async function assertSafeEndpoint(rawUrl: string): Promise<string[]> {
   const url = new URL(rawUrl);
   if (url.protocol !== 'https:') {
     throw new Error('Niestandardowy endpoint musi używać https://');
@@ -52,15 +62,16 @@ async function assertSafeEndpoint(rawUrl: string): Promise<void> {
   if (hostname === 'localhost' || isPrivateOrReservedIp(hostname)) {
     throw new Error('Ten adres endpointu jest niedozwolony');
   }
-  let addresses: string[];
+  let addresses: { address: string; family: number }[];
   try {
-    addresses = (await dns.lookup(hostname, { all: true })).map((r) => r.address);
+    addresses = await dns.lookup(hostname, { all: true });
   } catch {
     throw new Error('Nie udało się rozwiązać adresu endpointu');
   }
-  if (addresses.length === 0 || addresses.some(isPrivateOrReservedIp)) {
+  if (addresses.length === 0 || addresses.some((a) => isPrivateOrReservedIp(a.address))) {
     throw new Error('Ten adres endpointu jest niedozwolony');
   }
+  return addresses.map((a) => a.address);
 }
 
 async function buildFinancialContext(userId: string): Promise<string> {
@@ -138,12 +149,24 @@ export async function POST(req: NextRequest) {
 
   if (config.provider === 'openai' || config.provider === 'custom') {
     const endpoint = config.endpoint ?? 'https://api.openai.com/v1';
+    let pinnedAddresses: string[];
     try {
-      await assertSafeEndpoint(endpoint);
+      pinnedAddresses = await assertSafeEndpoint(endpoint);
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : 'Nieprawidłowy endpoint' }, { status: 400 });
     }
-    const res = await fetch(`${endpoint}/chat/completions`, {
+    // Pin the connection to exactly the IPs we just validated — resolving the
+    // hostname again inside undici would reopen a DNS-rebinding window.
+    const pinnedDispatcher = new Agent({
+      connect: {
+        lookup: (_hostname, options, callback) => {
+          const results = pinnedAddresses.map((address) => ({ address, family: address.includes(':') ? 6 : 4 }));
+          if (options?.all) callback(null, results);
+          else callback(null, results[0].address, results[0].family);
+        },
+      },
+    });
+    const res = await undiciFetch(`${endpoint}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -159,12 +182,13 @@ export async function POST(req: NextRequest) {
         temperature: 0.7,
       }),
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      dispatcher: pinnedDispatcher,
     });
     if (!res.ok) {
       const err = await res.text();
       return NextResponse.json({ error: `Provider error: ${err}` }, { status: 502 });
     }
-    const data = await res.json();
+    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
     responseContent = data.choices?.[0]?.message?.content ?? 'Brak odpowiedzi';
   } else if (config.provider === 'anthropic') {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
