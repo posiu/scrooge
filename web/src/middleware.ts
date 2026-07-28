@@ -1,19 +1,48 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/login', '/roadmap', '/pricing', '/auth/callback'];
+const PUBLIC_PATHS = ['/', '/login', '/roadmap', '/pricing', '/privacy', '/terms', '/auth/callback'];
 
 // ─── Domain split (production only — inert on localhost/preview hosts) ────────
 // Marketing pages live on the apex domain; everything else belongs on the app
 // subdomain. Both point at this same deployment, split purely by hostname.
 const APEX_HOST = 'usescrooge.com';
 const APP_HOST = 'app.usescrooge.com';
-const MARKETING_PATHS = ['/', '/pricing', '/roadmap'];
+const MARKETING_PATHS = ['/', '/pricing', '/roadmap', '/privacy', '/terms'];
+
+function buildCspHeader(nonce: string): string {
+  return `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: blob: https://*.supabase.co;
+    font-src 'self';
+    connect-src 'self' https://*.supabase.co;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+  `.replace(/\s{2,}/g, ' ').trim();
+}
+
+function applySecurityHeaders(response: NextResponse, cspHeader: string): NextResponse {
+  response.headers.set('Content-Security-Policy', cspHeader);
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  return response;
+}
 
 export async function middleware(request: NextRequest) {
   const host = request.headers.get('host')?.split(':')[0] ?? '';
   const pathname = request.nextUrl.pathname;
   const isApex = host === APEX_HOST || host === `www.${APEX_HOST}`;
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const cspHeader = buildCspHeader(nonce);
 
   // Apex domain: only marketing pages, APIs, auth callback, and static files
   // (anything with a dot, e.g. manifest.json) are allowed to stay. Everything
@@ -27,17 +56,21 @@ export async function middleware(request: NextRequest) {
   ) {
     const url = new URL(request.url);
     url.host = APP_HOST;
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url), cspHeader);
   }
 
   // App subdomain has no marketing content — send its bare root to login.
   if (host === APP_HOST && pathname === '/') {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url), cspHeader);
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', cspHeader);
+
+  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,7 +84,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );
@@ -76,17 +109,17 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url), cspHeader);
   }
 
   // Authenticated user tries to access login page
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url), cspHeader);
   }
 
-  return supabaseResponse;
+  return applySecurityHeaders(supabaseResponse, cspHeader);
 }
 
 export const config = {

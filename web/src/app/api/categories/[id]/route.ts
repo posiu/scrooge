@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { categories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
+import { isAdmin } from '@/lib/auth/admin';
 
 const UpdateSchema = z.object({
   name:     z.string().min(1).optional(),
@@ -31,10 +32,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (data.color !== undefined)    updateData.color    = data.color ?? null;
   if (data.parentId !== undefined) updateData.parentId = data.parentId ?? null;
 
-  // Allow editing own categories or system ones
+  // Allow editing own categories; system categories require admin
   const cat = await db.query.categories.findFirst({ where: eq(categories.id, id) });
   if (!cat) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (cat.userId && cat.userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (cat.userId) {
+    if (cat.userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  } else if (!(await isAdmin(user.id))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const [updated] = await db.update(categories).set(updateData).where(eq(categories.id, id)).returning();
   return NextResponse.json(updated);

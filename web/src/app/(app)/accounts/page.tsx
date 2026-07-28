@@ -44,6 +44,7 @@ async function getAccountsWithBalance(userId: string) {
         .where(
           and(
             eq(transactions.accountId, account.id),
+            eq(transactions.userId, userId),
             eq(transactions.type, 'income'),
             isNull(transactions.deletedAt),
           ),
@@ -55,6 +56,7 @@ async function getAccountsWithBalance(userId: string) {
         .where(
           and(
             eq(transactions.accountId, account.id),
+            eq(transactions.userId, userId),
             eq(transactions.type, 'expense'),
             isNull(transactions.deletedAt),
           ),

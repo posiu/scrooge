@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { transactions, budgets, accounts, liabilities } from '@/lib/db/schema';
 import { eq, and, isNull, gte, lte, sum, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import { promises as dns } from 'dns';
 
 const RequestSchema = z.object({
   messages: z.array(z.object({
@@ -12,11 +13,55 @@ const RequestSchema = z.object({
   })),
   config: z.object({
     provider: z.string(),
-    modelId:  z.string(),
+    modelId:  z.string().regex(/^[a-zA-Z0-9._:-]+$/, 'Nieprawidłowy identyfikator modelu'),
     apiKey:   z.string(),
-    endpoint: z.string().optional(),
+    endpoint: z.string().url().optional(),
   }),
 });
+
+const FETCH_TIMEOUT_MS = 30_000;
+
+// Blocks SSRF via a user-supplied "custom" endpoint: loopback, private/link-local
+// ranges (incl. cloud metadata 169.254.169.254), and non-HTTPS targets. DNS is
+// resolved and the actual IP checked too, to catch DNS-rebinding attempts —
+// checking the hostname string alone isn't enough.
+function isPrivateOrReservedIp(ip: string): boolean {
+  if (ip === '::1') return true;
+  const lower = ip.toLowerCase();
+  if (lower.startsWith('fe80:')) return true; // IPv6 link-local
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true; // IPv6 unique-local
+
+  const parts = ip.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((p) => Number.isNaN(p))) return false;
+  const [a, b] = parts;
+  if (a === 127) return true;                        // loopback
+  if (a === 10) return true;                          // 10.0.0.0/8
+  if (a === 172 && b >= 16 && b <= 31) return true;    // 172.16.0.0/12
+  if (a === 192 && b === 168) return true;             // 192.168.0.0/16
+  if (a === 169 && b === 254) return true;             // link-local + cloud metadata
+  if (a === 0) return true;                            // 0.0.0.0/8
+  return false;
+}
+
+async function assertSafeEndpoint(rawUrl: string): Promise<void> {
+  const url = new URL(rawUrl);
+  if (url.protocol !== 'https:') {
+    throw new Error('Niestandardowy endpoint musi używać https://');
+  }
+  const hostname = url.hostname.toLowerCase();
+  if (hostname === 'localhost' || isPrivateOrReservedIp(hostname)) {
+    throw new Error('Ten adres endpointu jest niedozwolony');
+  }
+  let addresses: string[];
+  try {
+    addresses = (await dns.lookup(hostname, { all: true })).map((r) => r.address);
+  } catch {
+    throw new Error('Nie udało się rozwiązać adresu endpointu');
+  }
+  if (addresses.length === 0 || addresses.some(isPrivateOrReservedIp)) {
+    throw new Error('Ten adres endpointu jest niedozwolony');
+  }
+}
 
 async function buildFinancialContext(userId: string): Promise<string> {
   const now = new Date();
@@ -93,6 +138,11 @@ export async function POST(req: NextRequest) {
 
   if (config.provider === 'openai' || config.provider === 'custom') {
     const endpoint = config.endpoint ?? 'https://api.openai.com/v1';
+    try {
+      await assertSafeEndpoint(endpoint);
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Nieprawidłowy endpoint' }, { status: 400 });
+    }
     const res = await fetch(`${endpoint}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -108,6 +158,7 @@ export async function POST(req: NextRequest) {
         max_tokens: 1000,
         temperature: 0.7,
       }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
       const err = await res.text();
@@ -129,6 +180,7 @@ export async function POST(req: NextRequest) {
         messages,
         max_tokens: 1000,
       }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
       const err = await res.text();
@@ -150,6 +202,7 @@ export async function POST(req: NextRequest) {
           })),
           generationConfig: { maxOutputTokens: 1000 },
         }),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       },
     );
     if (!res.ok) {

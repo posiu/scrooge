@@ -9,6 +9,13 @@ type AdminCheck =
   | { user: null; error: 'Unauthorized'; status: 401 }
   | { user: null; error: 'Forbidden'; status: 403 };
 
+export async function isAdmin(userId: string): Promise<boolean> {
+  const settings = await db.query.userSettings.findFirst({
+    where: eq(userSettings.userId, userId),
+  });
+  return settings?.isAdmin ?? false;
+}
+
 export async function requireAdmin(): Promise<AdminCheck> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { transactions, categories } from '@/lib/db/schema';
-import { eq, or, isNull, and } from 'drizzle-orm';
+import { eq, or, isNull, and, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { userOwnsAccount } from '@/lib/db/ownership';
 
 const RowSchema = z.object({
   date:        z.string(),
@@ -16,7 +17,7 @@ const RowSchema = z.object({
 });
 
 const ImportSchema = z.object({
-  rows:      z.array(RowSchema),
+  rows:      z.array(RowSchema).max(1000, 'Maksymalnie 1000 wierszy na import'),
   accountId: z.string().uuid(),
   mapping: z.object({
     date:         z.string(),
@@ -54,15 +55,21 @@ export async function POST(req: NextRequest) {
 
   const { rows, accountId, mapping, skipDuplicates } = parsed.data;
 
+  if (!(await userOwnsAccount(user.id, accountId))) {
+    return NextResponse.json({ error: 'Nieprawidłowe konto' }, { status: 403 });
+  }
+
   // Load user categories for auto-mapping
   const userCategories = await db.query.categories.findMany({
     where: and(or(eq(categories.userId, user.id), isNull(categories.userId)), eq(categories.isActive, true)),
   });
   const catByName = new Map(userCategories.map(c => [c.name.toLowerCase().trim(), c]));
 
-  let imported = 0;
   let skipped = 0;
   let errors = 0;
+
+  type PreparedRow = { hash: string; values: typeof transactions.$inferInsert };
+  const prepared: PreparedRow[] = [];
 
   for (const row of rows) {
     try {
@@ -88,29 +95,49 @@ export async function POST(req: NextRequest) {
         .update(`${date.toISOString().split('T')[0]}_${amount}_${row.description}`)
         .digest('hex');
 
-      if (skipDuplicates) {
-        const existing = await db.query.transactions.findFirst({
-          where: and(eq(transactions.userId, user.id), eq(transactions.importHash, hash)),
-        });
-        if (existing) { skipped++; continue; }
-      }
-
-      await db.insert(transactions).values({
-        userId:      user.id,
-        accountId,
-        categoryId,
-        amount:      String(amount),
-        type,
-        currency:    'PLN',
-        description: row.description || null,
-        date,
-        importHash:  hash,
+      prepared.push({
+        hash,
+        values: {
+          userId:      user.id,
+          accountId,
+          categoryId,
+          amount:      String(amount),
+          type,
+          currency:    'PLN',
+          description: row.description || null,
+          date,
+          importHash:  hash,
+        },
       });
-
-      imported++;
     } catch {
       errors++;
     }
+  }
+
+  let toInsert = prepared;
+
+  if (skipDuplicates && prepared.length > 0) {
+    const hashes = [...new Set(prepared.map(p => p.hash))];
+    const existingRows = await db.query.transactions.findMany({
+      where: and(eq(transactions.userId, user.id), inArray(transactions.importHash, hashes)),
+      columns: { importHash: true },
+    });
+    const existingHashes = new Set(existingRows.map(r => r.importHash));
+
+    const seenInBatch = new Set<string>();
+    toInsert = prepared.filter((p) => {
+      if (existingHashes.has(p.hash) || seenInBatch.has(p.hash)) { skipped++; return false; }
+      seenInBatch.add(p.hash);
+      return true;
+    });
+  }
+
+  let imported = 0;
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
+    const chunk = toInsert.slice(i, i + BATCH_SIZE);
+    await db.insert(transactions).values(chunk.map(c => c.values));
+    imported += chunk.length;
   }
 
   return NextResponse.json({ imported, skipped, errors });

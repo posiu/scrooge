@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { transactions } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
+import { userOwnsAccount, userCanUseCategory } from '@/lib/db/ownership';
 
 const UpdateSchema = z.object({
   accountId:           z.string().uuid().optional(),
@@ -43,6 +44,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
   const { data } = parsed;
+
+  if (data.accountId !== undefined && !(await userOwnsAccount(user.id, data.accountId))) {
+    return NextResponse.json({ error: 'Nieprawidłowe konto' }, { status: 403 });
+  }
+  if (data.transferToAccountId && !(await userOwnsAccount(user.id, data.transferToAccountId))) {
+    return NextResponse.json({ error: 'Nieprawidłowe konto docelowe' }, { status: 403 });
+  }
+  if (data.categoryId && !(await userCanUseCategory(user.id, data.categoryId))) {
+    return NextResponse.json({ error: 'Nieprawidłowa kategoria' }, { status: 403 });
+  }
+
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
   if (data.accountId !== undefined)           updateData.accountId           = data.accountId;
   if (data.categoryId !== undefined)          updateData.categoryId          = data.categoryId ?? null;

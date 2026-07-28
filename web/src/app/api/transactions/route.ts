@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { transactions } from '@/lib/db/schema';
 import { eq, and, isNull, desc, gte, lte } from 'drizzle-orm';
 import { z } from 'zod';
+import { userOwnsAccount, userCanUseCategory } from '@/lib/db/ownership';
 
 const TransactionSchema = z.object({
   accountId:           z.string().uuid(),
@@ -64,6 +65,17 @@ export async function POST(req: NextRequest) {
   }
 
   const { data } = parsed;
+
+  if (!(await userOwnsAccount(user.id, data.accountId))) {
+    return NextResponse.json({ error: 'Nieprawidłowe konto' }, { status: 403 });
+  }
+  if (data.transferToAccountId && !(await userOwnsAccount(user.id, data.transferToAccountId))) {
+    return NextResponse.json({ error: 'Nieprawidłowe konto docelowe' }, { status: 403 });
+  }
+  if (data.categoryId && !(await userCanUseCategory(user.id, data.categoryId))) {
+    return NextResponse.json({ error: 'Nieprawidłowa kategoria' }, { status: 403 });
+  }
+
   const date = new Date(data.date);
 
   const [tx] = await db.insert(transactions).values({

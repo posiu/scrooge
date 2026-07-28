@@ -93,6 +93,7 @@ export const accounts = pgTable('accounts', {
   description: text('description'),
   sortOrder:   integer('sort_order').notNull().default(0),
   isActive:    boolean('is_active').notNull().default(true),
+  isDemoData:  boolean('is_demo_data').notNull().default(false),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:   timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
@@ -130,6 +131,7 @@ export const categories = pgTable('categories', {
   sortOrder:   integer('sort_order').notNull().default(0),
   isSystem:    boolean('is_system').notNull().default(false),
   isActive:    boolean('is_active').notNull().default(true),
+  isDemoData:  boolean('is_demo_data').notNull().default(false),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:   timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
@@ -153,6 +155,7 @@ export const transactions = pgTable('transactions', {
   transferToAccountId:  uuid('transfer_to_account_id').references(() => accounts.id),
   // Import deduplication: hash of (date + amount + description)
   importHash:           text('import_hash'),
+  isDemoData:           boolean('is_demo_data').notNull().default(false),
   deletedAt:            timestamp('deleted_at', { withTimezone: true }), // soft delete
   createdAt:            timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:            timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -243,11 +246,22 @@ export const aiChatSessions = pgTable('ai_chat_sessions', {
 // ─── Waitlist ─────────────────────────────────────────────────────────────────
 
 export const waitlistEntries = pgTable('waitlist_entries', {
-  id:        uuid('id').primaryKey().defaultRandom(),
-  email:     text('email').notNull().unique(),
-  firstName: text('first_name').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  id:          uuid('id').primaryKey().defaultRandom(),
+  email:       text('email').notNull().unique(),
+  firstName:   text('first_name').notNull(),
+  consentAt:   timestamp('consent_at', { withTimezone: true }),
+  createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Rate limiting (DB-backed — no external dependency) ───────────────────────
+
+export const rateLimitHits = pgTable('rate_limit_hits', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  key:       text('key').notNull(), // e.g. "waitlist:203.0.113.5"
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('rate_limit_hits_key_idx').on(t.key, t.createdAt),
+]);
 
 // ─── Feature Requests ─────────────────────────────────────────────────────────
 

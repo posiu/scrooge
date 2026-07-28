@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { featureRequests, featureVotes } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 const FeatureRequestSchema = z.object({
   title:       z.string().min(5).max(100),
@@ -38,6 +39,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const allowed = await checkRateLimit(`feature-requests:${getClientIp(req)}`, 5, 3600);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Zbyt wiele prób. Spróbuj ponownie za godzinę.' }, { status: 429 });
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
