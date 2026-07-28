@@ -13,6 +13,12 @@ export function MarketingFooter() {
           <Link href="/pricing" className="hover:text-foreground transition-colors">
             Cennik
           </Link>
+          <Link href="/privacy" className="hover:text-foreground transition-colors">
+            Polityka Prywatności
+          </Link>
+          <Link href="/terms" className="hover:text-foreground transition-colors">
+            Regulamin
+          </Link>
           <span>Domowy Controlling · {new Date().getFullYear()}</span>
         </div>
       </div>

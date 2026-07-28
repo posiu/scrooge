@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { Bell, X, Check, Loader2 } from 'lucide-react';
 
 interface WaitlistButtonProps {
@@ -14,6 +15,7 @@ export function WaitlistButton({ className, children }: WaitlistButtonProps) {
   const [done, setDone] = useState(false);
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,19 +25,24 @@ export function WaitlistButton({ className, children }: WaitlistButtonProps) {
       setDone(false);
       setEmail('');
       setFirstName('');
+      setConsent(false);
       setError('');
     }, 200);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!consent) {
+      setError('Zaznacz zgodę, aby zapisać się na listę.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, firstName }),
+        body: JSON.stringify({ email, firstName, consent }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -104,8 +111,28 @@ export function WaitlistButton({ className, children }: WaitlistButtonProps) {
                       className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]"
                     />
                   </div>
+                  <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-0.5 accent-[#01581E]"
+                    />
+                    <span>
+                      Zgadzam się na przetwarzanie mojego adresu e-mail w celu kontaktu w sprawie
+                      uruchomienia Scrooge, zgodnie z{' '}
+                      <Link href="/privacy" target="_blank" className="underline hover:text-foreground">
+                        Polityką Prywatności
+                      </Link>{' '}
+                      i{' '}
+                      <Link href="/terms" target="_blank" className="underline hover:text-foreground">
+                        Regulaminem
+                      </Link>
+                      . *
+                    </span>
+                  </label>
                   <button
-                    type="submit" disabled={submitting}
+                    type="submit" disabled={submitting || !consent}
                     className="w-full py-2.5 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Zapisz mnie na listę'}
