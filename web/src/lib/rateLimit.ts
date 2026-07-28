@@ -9,15 +9,23 @@ import type { NextRequest } from 'next/server';
 export async function checkRateLimit(key: string, maxHits: number, windowSeconds: number): Promise<boolean> {
   const windowStart = new Date(Date.now() - windowSeconds * 1000);
 
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(rateLimitHits)
-    .where(and(eq(rateLimitHits.key, key), gte(rateLimitHits.createdAt, windowStart)));
+  return db.transaction(async (tx) => {
+    // Serialize concurrent calls for the same key so the count-then-insert
+    // below can't race under parallel requests — an advisory lock keyed by
+    // the rate-limit key, held only for this transaction and released
+    // automatically on commit/rollback.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${key}))`);
 
-  if (Number(count) >= maxHits) return false;
+    const [{ count }] = await tx
+      .select({ count: sql<number>`count(*)` })
+      .from(rateLimitHits)
+      .where(and(eq(rateLimitHits.key, key), gte(rateLimitHits.createdAt, windowStart)));
 
-  await db.insert(rateLimitHits).values({ key });
-  return true;
+    if (Number(count) >= maxHits) return false;
+
+    await tx.insert(rateLimitHits).values({ key });
+    return true;
+  });
 }
 
 export function getClientIp(req: NextRequest): string {
