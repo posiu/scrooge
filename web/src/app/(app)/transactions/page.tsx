@@ -1,9 +1,11 @@
 export const dynamic = 'force-dynamic';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { transactions, accounts, categories } from '@/lib/db/schema';
 import { eq, and, isNull, desc, gte, lte } from 'drizzle-orm';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import type { Locale } from '@/i18n/config';
 import { Header } from '@/components/layout/Header';
 import { TransactionFilters } from '@/components/forms/TransactionFilters';
 import { AddTransactionButton } from '@/components/forms/AddTransactionButton';
@@ -20,6 +22,9 @@ export default async function TransactionsPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+
+  const t = await getTranslations('Transactions');
+  const locale = await getLocale() as Locale;
 
   const page = parseInt(params.page ?? '1');
   const limit = 50;
@@ -80,7 +85,7 @@ export default async function TransactionsPage({
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <Header title="Transakcje" />
+      <Header title={t('title')} />
 
       {/* Top actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -95,20 +100,20 @@ export default async function TransactionsPage({
             <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
               <Plus className="w-6 h-6 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium text-foreground mb-1">Brak transakcji</p>
+            <p className="text-sm font-medium text-foreground mb-1">{t('empty')}</p>
             <p className="text-xs text-muted-foreground">
-              Dodaj pierwszą transakcję lub zaimportuj dane z Excela.
+              {t('emptyHint')}
             </p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Data</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Opis</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground hidden md:table-cell">Kategoria</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground hidden lg:table-cell">Konto</th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Kwota</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('colDate')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('colDescription')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground hidden md:table-cell">{t('colCategory')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground hidden lg:table-cell">{t('colAccount')}</th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">{t('colAmount')}</th>
                 <th className="w-10"></th>
               </tr>
             </thead>
@@ -116,7 +121,7 @@ export default async function TransactionsPage({
               {txList.map((tx) => (
                 <tr key={tx.id} className="hover:bg-muted/30 transition-colors group">
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDate(tx.date, 'dd.MM.yyyy')}
+                    {formatDate(tx.date, 'dd.MM.yyyy', locale)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -169,7 +174,7 @@ export default async function TransactionsPage({
             href={`/transactions?page=${page + 1}`}
             className="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            Następna strona
+            {t('nextPage')}
           </Link>
         </div>
       )}

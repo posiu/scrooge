@@ -1,9 +1,10 @@
 export const dynamic = 'force-dynamic';
+import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { budgets, transactions } from '@/lib/db/schema';
 import { eq, and, gte, lte, isNull, sum } from 'drizzle-orm';
-import { formatCurrency, getMonthsInYear, formatMonth } from '@/lib/utils';
+import { formatCurrency, getMonthsInYear } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -67,6 +68,9 @@ export default async function YearlyBudgetPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const t = await getTranslations('BudgetYear');
+  const monthNames = t.raw('months') as string[];
+
   const monthData = await getYearSummary(user.id, year);
 
   const totals = monthData.reduce(
@@ -78,12 +82,9 @@ export default async function YearlyBudgetPage({ params }: Props) {
     { planned: 0, income: 0, expense: 0 },
   );
 
-  const monthNames = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec',
-                      'Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
-
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <Header title={`Podsumowanie roku ${year}`} />
+      <Header title={t('yearSummary', { year })} />
 
       {/* Year navigation */}
       <div className="flex items-center justify-between">
@@ -99,10 +100,10 @@ export default async function YearlyBudgetPage({ params }: Props) {
       {/* Year totals */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Łączne przychody', value: formatCurrency(totals.income), color: 'text-[#01581E]' },
-          { label: 'Łączne wydatki', value: formatCurrency(totals.expense), color: 'text-foreground' },
-          { label: 'Oszczędności', value: formatCurrency(totals.income - totals.expense), color: totals.income - totals.expense >= 0 ? 'text-[#01581E]' : 'text-destructive' },
-          { label: 'Plan (łącznie)', value: formatCurrency(totals.planned), color: 'text-muted-foreground' },
+          { label: t('totalIncome'), value: formatCurrency(totals.income), color: 'text-[#01581E]' },
+          { label: t('totalExpense'), value: formatCurrency(totals.expense), color: 'text-foreground' },
+          { label: t('savings'), value: formatCurrency(totals.income - totals.expense), color: totals.income - totals.expense >= 0 ? 'text-[#01581E]' : 'text-destructive' },
+          { label: t('totalPlanned'), value: formatCurrency(totals.planned), color: 'text-muted-foreground' },
         ].map((s) => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-4">
             <p className="text-xs text-muted-foreground mb-1">{s.label}</p>
@@ -114,18 +115,18 @@ export default async function YearlyBudgetPage({ params }: Props) {
       {/* Monthly breakdown table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground">Miesięczne zestawienie</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t('monthlyBreakdown')}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Miesiąc</th>
-                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">Plan</th>
-                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">Przychody</th>
-                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">Wydatki</th>
-                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">Oszczędności</th>
-                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">% planu</th>
+                <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colMonth')}</th>
+                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colPlan')}</th>
+                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colIncome')}</th>
+                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colExpense')}</th>
+                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colSavings')}</th>
+                <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colPercentPlan')}</th>
                 <th className="px-4 py-2.5" />
               </tr>
             </thead>
@@ -161,7 +162,7 @@ export default async function YearlyBudgetPage({ params }: Props) {
                         href={`/budget/${year}/${monthNum}`}
                         className="text-xs text-[#01581E] hover:underline"
                       >
-                        Szczegóły
+                        {t('details')}
                       </Link>
                     </td>
                   </tr>
@@ -170,7 +171,7 @@ export default async function YearlyBudgetPage({ params }: Props) {
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-border bg-muted/20">
-                <td className="px-4 py-3 text-sm font-semibold text-foreground">Rok {year}</td>
+                <td className="px-4 py-3 text-sm font-semibold text-foreground">{t('year', { year })}</td>
                 <td className="px-4 py-3 text-right text-sm font-semibold text-muted-foreground">{formatCurrency(totals.planned)}</td>
                 <td className="px-4 py-3 text-right text-sm font-semibold text-[#01581E]">{formatCurrency(totals.income)}</td>
                 <td className="px-4 py-3 text-right text-sm font-semibold text-foreground">{formatCurrency(totals.expense)}</td>

@@ -1,9 +1,11 @@
 export const dynamic = 'force-dynamic';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { budgets, transactions, categories } from '@/lib/db/schema';
 import { eq, and, gte, lte, isNull, sum } from 'drizzle-orm';
 import { formatCurrency, formatMonth, getPolishHolidays } from '@/lib/utils';
+import type { Locale } from '@/i18n/config';
 import { Header } from '@/components/layout/Header';
 import { BudgetProgress } from '@/components/charts/BudgetProgress';
 import { AddBudgetButton } from '@/components/forms/AddBudgetButton';
@@ -11,7 +13,6 @@ import { EditBudgetButton } from '@/components/forms/EditBudgetButton';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
-import { pl } from 'date-fns/locale';
 import { format } from 'date-fns';
 
 interface Props {
@@ -75,9 +76,12 @@ export default async function MonthlyBudgetPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const t = await getTranslations('BudgetMonth');
+  const locale = await getLocale() as Locale;
+
   const data = await getMonthBudgetData(user.id, year, month);
-  const holidays = getPolishHolidays(year);
-  const monthLabel = formatMonth(`${yearStr}-${String(month).padStart(2, '0')}`);
+  const holidays = getPolishHolidays(year, locale);
+  const monthLabel = formatMonth(`${yearStr}-${String(month).padStart(2, '0')}`, locale);
 
   // Navigation
   const prevDate = new Date(year, month - 2, 1);
@@ -100,7 +104,7 @@ export default async function MonthlyBudgetPage({ params }: Props) {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <Header title={`Budżet · ${monthLabel}`} />
+      <Header title={t('title', { month: monthLabel })} />
 
       {/* Month navigation */}
       <div className="flex items-center justify-between">
@@ -109,7 +113,7 @@ export default async function MonthlyBudgetPage({ params }: Props) {
           className="flex items-center gap-1 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Poprzedni
+          {t('prev')}
         </Link>
         <Link
           href={`/budget/${year}`}
@@ -122,7 +126,7 @@ export default async function MonthlyBudgetPage({ params }: Props) {
           href={nextHref}
           className="flex items-center gap-1 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          Następny
+          {t('next')}
           <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -130,9 +134,9 @@ export default async function MonthlyBudgetPage({ params }: Props) {
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Plan', value: formatCurrency(data.totalPlanned), color: 'text-foreground' },
-          { label: 'Realizacja', value: formatCurrency(data.totalActual), color: data.totalActual > data.totalPlanned ? 'text-destructive' : 'text-foreground' },
-          { label: 'Różnica', value: formatCurrency(data.totalPlanned - data.totalActual), color: data.totalPlanned - data.totalActual >= 0 ? 'text-[#01581E]' : 'text-destructive' },
+          { label: t('plan'), value: formatCurrency(data.totalPlanned), color: 'text-foreground' },
+          { label: t('actual'), value: formatCurrency(data.totalActual), color: data.totalActual > data.totalPlanned ? 'text-destructive' : 'text-foreground' },
+          { label: t('difference'), value: formatCurrency(data.totalPlanned - data.totalActual), color: data.totalPlanned - data.totalActual >= 0 ? 'text-[#01581E]' : 'text-destructive' },
         ].map((s) => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-4">
             <p className="text-xs text-muted-foreground mb-1">{s.label}</p>
@@ -144,13 +148,13 @@ export default async function MonthlyBudgetPage({ params }: Props) {
       {/* Budget rows */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground">Kategorie</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t('categories')}</h2>
           <AddBudgetButton month={data.monthStr} userId={user.id} />
         </div>
 
         {data.rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Brak planu budżetowego na ten miesiąc.{' '}
+            {t('noBudget')}{' '}
             <AddBudgetButton month={data.monthStr} userId={user.id} inline />
           </div>
         ) : (
@@ -161,7 +165,7 @@ export default async function MonthlyBudgetPage({ params }: Props) {
               return (
                 <div key={row.id} className="px-4 py-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-foreground">{row.category?.name ?? 'Bez kategorii'}</span>
+                    <span className="text-sm text-foreground">{row.category?.name ?? t('noCategory')}</span>
                     <div className="flex items-center gap-3 text-sm">
                       <span className={over ? 'text-destructive font-medium' : 'text-foreground'}>
                         {formatCurrency(row.actual)}
@@ -169,7 +173,7 @@ export default async function MonthlyBudgetPage({ params }: Props) {
                       <span className="text-muted-foreground">/ {formatCurrency(row.planned)}</span>
                       <EditBudgetButton
                         categoryId={row.categoryId}
-                        categoryName={row.category?.name ?? 'Bez kategorii'}
+                        categoryName={row.category?.name ?? t('noCategory')}
                         month={data.monthStr}
                         plannedAmount={row.planned}
                         notes={row.notes}
@@ -185,8 +189,8 @@ export default async function MonthlyBudgetPage({ params }: Props) {
                   <div className="flex justify-between mt-1 text-xs text-muted-foreground">
                     <span>{Math.round(pct)}%</span>
                     {over
-                      ? <span className="text-destructive">Przekroczenie: {formatCurrency(row.actual - row.planned)}</span>
-                      : <span>Pozostało: {formatCurrency(row.planned - row.actual)}</span>
+                      ? <span className="text-destructive">{t('overBudget', { amount: formatCurrency(row.actual - row.planned) })}</span>
+                      : <span>{t('remaining', { amount: formatCurrency(row.planned - row.actual) })}</span>
                     }
                   </div>
                 </div>
@@ -200,10 +204,10 @@ export default async function MonthlyBudgetPage({ params }: Props) {
       <div className="bg-card border border-border rounded-xl p-5">
         <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
           <CalendarDays className="w-4 h-4 text-muted-foreground" />
-          Kalendarz — {monthLabel}
+          {t('calendar', { month: monthLabel })}
         </h2>
         <div className="grid grid-cols-7 gap-1 text-center mb-2">
-          {['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'].map((d) => (
+          {(t.raw('weekdays') as string[]).map((d) => (
             <div key={d} className="text-xs text-muted-foreground font-medium py-1">{d}</div>
           ))}
         </div>
@@ -218,7 +222,7 @@ export default async function MonthlyBudgetPage({ params }: Props) {
               <Link
                 key={day}
                 href={`/transactions?date=${dateStr}`}
-                title={`${holiday ?? ''} (Kliknij, aby zobaczyć transakcje z tego dnia)`.trim()}
+                title={t('dayTooltip', { holiday: holiday ?? '' }).trim()}
                 className={`text-xs rounded-md py-1.5 text-center transition-colors hover:bg-muted/80 block cursor-pointer ${
                   holiday
                     ? 'bg-[#01581E]/15 text-[#01581E] font-semibold'

@@ -1,29 +1,33 @@
 export const dynamic = 'force-dynamic';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { liabilities } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { Header } from '@/components/layout/Header';
+import type { Locale } from '@/i18n/config';
 import { AddLiabilityButton } from '@/components/forms/AddLiabilityButton';
 import { EditLiabilityButton } from '@/components/forms/EditLiabilityButton';
 import { HandCoins, CreditCard, RefreshCw, ShoppingBag, MoreHorizontal, User, Landmark, Briefcase } from 'lucide-react';
 
-const liabilityTypeLabels: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  loan:          { label: 'Kredyt',            icon: HandCoins,      color: 'text-red-600 dark:text-red-400' },
-  credit:        { label: 'Karta',             icon: CreditCard,     color: 'text-orange-600 dark:text-orange-400' },
-  subscription:  { label: 'Subskrypcja',       icon: RefreshCw,      color: 'text-blue-600 dark:text-blue-400' },
-  installment:   { label: 'Rata',               icon: ShoppingBag,    color: 'text-amber-600 dark:text-amber-400' },
-  personal_loan: { label: 'Pożyczka osobista', icon: User,           color: 'text-pink-600 dark:text-pink-400' },
-  bank_loan:     { label: 'Pożyczka bankowa',  icon: Landmark,       color: 'text-cyan-600 dark:text-cyan-400' },
-  company_loan:  { label: 'Pożyczka z firmy',  icon: Briefcase,      color: 'text-teal-600 dark:text-teal-400' },
-  other:         { label: 'Inne',               icon: MoreHorizontal, color: 'text-muted-foreground' },
+const LIABILITY_TYPE_META: Record<string, { labelKey: string; icon: React.ElementType; color: string }> = {
+  loan:          { labelKey: 'typeLoan',         icon: HandCoins,      color: 'text-red-600 dark:text-red-400' },
+  credit:        { labelKey: 'typeCredit',       icon: CreditCard,     color: 'text-orange-600 dark:text-orange-400' },
+  subscription:  { labelKey: 'typeSubscription', icon: RefreshCw,      color: 'text-blue-600 dark:text-blue-400' },
+  installment:   { labelKey: 'typeInstallment',  icon: ShoppingBag,    color: 'text-amber-600 dark:text-amber-400' },
+  personal_loan: { labelKey: 'typePersonalLoan', icon: User,           color: 'text-pink-600 dark:text-pink-400' },
+  bank_loan:     { labelKey: 'typeBankLoan',      icon: Landmark,       color: 'text-cyan-600 dark:text-cyan-400' },
+  company_loan:  { labelKey: 'typeCompanyLoan',  icon: Briefcase,      color: 'text-teal-600 dark:text-teal-400' },
+  other:         { labelKey: 'typeOther',         icon: MoreHorizontal, color: 'text-muted-foreground' },
 };
 
 export default async function LiabilitiesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+
+  const t = await getTranslations('Liabilities');
+  const locale = await getLocale() as Locale;
 
   const items = await db.query.liabilities.findMany({
     where: and(
@@ -39,8 +43,8 @@ export default async function LiabilitiesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Zobowiązania</h1>
-          <p className="text-sm text-muted-foreground">Kredyty, pożyczki, raty i subskrypcje</p>
+          <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -52,13 +56,13 @@ export default async function LiabilitiesPage() {
       {items.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <HandCoins className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">Brak zobowiązań</p>
-          <p className="text-xs text-muted-foreground">Dodaj kredyt, ratę lub subskrypcję.</p>
+          <p className="text-sm font-medium text-foreground mb-1">{t('empty')}</p>
+          <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {items.map((l) => {
-            const meta = liabilityTypeLabels[l.type] ?? liabilityTypeLabels.other;
+            const meta = LIABILITY_TYPE_META[l.type] ?? LIABILITY_TYPE_META.other;
             const Icon = meta.icon;
             const remaining = parseFloat(l.remainingAmount);
             const total = parseFloat(l.totalAmount);
@@ -73,13 +77,13 @@ export default async function LiabilitiesPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{l.name}</p>
-                      <p className="text-xs text-muted-foreground">{meta.label}{l.category ? ` · ${l.category.name}` : ''}</p>
+                      <p className="text-xs text-muted-foreground">{t(meta.labelKey)}{l.category ? ` · ${l.category.name}` : ''}</p>
                     </div>
                   </div>
                   <div className="text-right flex items-start gap-2">
                     <div>
                       <p className="text-sm font-bold text-destructive">{formatCurrency(remaining)}</p>
-                      <p className="text-xs text-muted-foreground">z {formatCurrency(total)}</p>
+                      <p className="text-xs text-muted-foreground">{t('of', { total: formatCurrency(total) })}</p>
                     </div>
                     <EditLiabilityButton liability={l} />
                   </div>
@@ -93,13 +97,13 @@ export default async function LiabilitiesPage() {
                   />
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{paidPct}% spłacono</span>
+                  <span>{t('paidPercent', { percent: paidPct })}</span>
                   <div className="flex gap-3">
                     {l.monthlyPayment && (
-                      <span>Rata: <span className="text-foreground font-medium">{formatCurrency(l.monthlyPayment)}/mies.</span></span>
+                      <span>{t('monthlyPayment', { amount: formatCurrency(l.monthlyPayment) })}</span>
                     )}
                     {l.dueDate && (
-                      <span>Do: <span className="text-foreground">{formatDate(l.dueDate, 'MM/yyyy')}</span></span>
+                      <span>{t('dueBy', { date: formatDate(l.dueDate, 'MM/yyyy', locale) })}</span>
                     )}
                   </div>
                 </div>

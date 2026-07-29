@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { accounts, transactions } from '@/lib/db/schema';
@@ -18,13 +19,13 @@ import {
   TrendingDown,
 } from 'lucide-react';
 
-const accountTypeLabels: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  bank:      { label: 'Konto bankowe', icon: Landmark,   color: 'text-blue-600 dark:text-blue-400' },
-  cash:      { label: 'Gotówka',       icon: Wallet,      color: 'text-amber-600 dark:text-amber-400' },
-  crypto:    { label: 'Kryptowaluty', icon: Bitcoin,     color: 'text-orange-600 dark:text-orange-400' },
-  fund:      { label: 'Fundusz',       icon: PiggyBank,   color: 'text-[#01581E]' },
-  insurance: { label: 'Polisa',        icon: ShieldCheck, color: 'text-purple-600 dark:text-purple-400' },
-  other:     { label: 'Inne',          icon: Boxes,       color: 'text-muted-foreground' },
+const ACCOUNT_TYPE_META: Record<string, { labelKey: string; icon: React.ElementType; color: string }> = {
+  bank:      { labelKey: 'typeBank',      icon: Landmark,   color: 'text-blue-600 dark:text-blue-400' },
+  cash:      { labelKey: 'typeCash',      icon: Wallet,      color: 'text-amber-600 dark:text-amber-400' },
+  crypto:    { labelKey: 'typeCrypto',    icon: Bitcoin,     color: 'text-orange-600 dark:text-orange-400' },
+  fund:      { labelKey: 'typeFund',      icon: PiggyBank,   color: 'text-[#01581E]' },
+  insurance: { labelKey: 'typeInsurance', icon: ShieldCheck, color: 'text-purple-600 dark:text-purple-400' },
+  other:     { labelKey: 'typeOther',     icon: Boxes,       color: 'text-muted-foreground' },
 };
 
 async function getAccountsWithBalance(userId: string) {
@@ -78,18 +79,19 @@ export default async function AccountsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const t = await getTranslations('Accounts');
   const accountsWithBalance = await getAccountsWithBalance(user.id);
   const totalBalance = accountsWithBalance.reduce((sum, a) => sum + a.balance, 0);
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <Header title="Konta" />
+      <Header title={t('title')} />
 
       {/* Total balance */}
       <div className="bg-[#01581E] rounded-2xl p-6 text-white">
-        <p className="text-white/70 text-sm mb-1">Łączny majątek</p>
+        <p className="text-white/70 text-sm mb-1">{t('totalBalance')}</p>
         <p className="text-4xl font-bold">{formatCurrency(totalBalance)}</p>
-        <p className="text-white/60 text-xs mt-2">{accountsWithBalance.length} aktywnych kont</p>
+        <p className="text-white/60 text-xs mt-2">{t('activeAccounts', { count: accountsWithBalance.length })}</p>
       </div>
 
       {/* Add account */}
@@ -101,13 +103,13 @@ export default async function AccountsPage() {
       {accountsWithBalance.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <Landmark className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">Brak kont</p>
-          <p className="text-xs text-muted-foreground">Dodaj swoje pierwsze konto finansowe.</p>
+          <p className="text-sm font-medium text-foreground mb-1">{t('empty')}</p>
+          <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {accountsWithBalance.map((account) => {
-            const meta = accountTypeLabels[account.type] ?? accountTypeLabels.other;
+            const meta = ACCOUNT_TYPE_META[account.type] ?? ACCOUNT_TYPE_META.other;
             const Icon = meta.icon;
 
             return (
@@ -122,7 +124,7 @@ export default async function AccountsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{account.name}</p>
-                      <p className="text-xs text-muted-foreground">{meta.label}</p>
+                      <p className="text-xs text-muted-foreground">{t(meta.labelKey)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

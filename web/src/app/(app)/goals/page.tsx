@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Target, Plus, Loader2, X, Check, PiggyBank, Pencil, Trash2, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Locale } from '@/i18n/config';
 
 interface GoalDeposit { id: string; amount: string; note: string | null; depositAt: string; }
 interface Goal {
@@ -13,10 +15,7 @@ interface Goal {
 
 const GOAL_ICONS = ['🏠', '🚗', '✈️', '🎓', '💍', '🏋️', '📱', '💻', '🌴', '🐕', '🎸', '📚', '🏊', '⛵', '🎯'];
 const GOAL_COLORS = ['#01581E', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#ca8a04', '#0891b2', '#475569'];
-
-function fmt(n: string | number) {
-  return Number(n).toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
-}
+const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
 
 function daysUntil(dateStr: string | null) {
   if (!dateStr) return null;
@@ -25,6 +24,10 @@ function daysUntil(dateStr: string | null) {
 }
 
 export default function GoalsPage() {
+  const t = useTranslations('Goals');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale() as Locale;
+  const fmt = (n: string | number) => Number(n).toLocaleString(INTL_LOCALE[locale], { style: 'currency', currency: 'PLN' });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -101,7 +104,7 @@ export default function GoalsPage() {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Usunąć cel "${name}"?`)) return;
+    if (!confirm(t('deleteConfirm', { name }))) return;
     await fetch(`/api/goals/${id}`, { method: 'DELETE' });
     load();
   }
@@ -120,13 +123,13 @@ export default function GoalsPage() {
             <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Cele oszczędnościowe</h1>
-            <p className="text-sm text-muted-foreground">Wyznaczaj i realizuj swoje finansowe cele</p>
+            <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
           </div>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors">
-          <Plus className="w-4 h-4" /> Nowy cel
+          <Plus className="w-4 h-4" /> {t('newGoal')}
         </button>
       </div>
 
@@ -134,9 +137,9 @@ export default function GoalsPage() {
       {goals.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Łączny cel', value: fmt(totalTarget), color: 'text-foreground' },
-            { label: 'Zaoszczędzono', value: fmt(totalSaved), color: 'text-green-600' },
-            { label: 'Pozostało', value: fmt(totalTarget - totalSaved), color: 'text-amber-600' },
+            { label: t('totalTarget'), value: fmt(totalTarget), color: 'text-foreground' },
+            { label: t('saved'), value: fmt(totalSaved), color: 'text-green-600' },
+            { label: t('remaining'), value: fmt(totalTarget - totalSaved), color: 'text-amber-600' },
           ].map(c => (
             <div key={c.label} className="bg-card border border-border rounded-xl p-4">
               <p className="text-xs text-muted-foreground mb-1">{c.label}</p>
@@ -152,14 +155,14 @@ export default function GoalsPage() {
       ) : goals.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <PiggyBank className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-medium">Brak celów oszczędnościowych</p>
-          <p className="text-sm mt-1">Dodaj pierwszy cel i zacznij systematycznie oszczędzać</p>
+          <p className="font-medium">{t('empty')}</p>
+          <p className="text-sm mt-1">{t('emptyHint')}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {active.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Aktywne ({active.length})</h2>
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t('activeCount', { count: active.length })}</h2>
               {active.map(goal => {
                 const pct = Math.min(100, (Number(goal.currentAmount) / Number(goal.targetAmount)) * 100);
                 const days = daysUntil(goal.targetDate);
@@ -180,12 +183,12 @@ export default function GoalsPage() {
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
                               <button onClick={() => setExpanded(isOpen ? null : goal.id)}
-                                className="p-1.5 rounded hover:bg-muted text-muted-foreground text-xs">Historia</button>
-                              <button onClick={() => setDepositTarget(goal)} title="Dodaj wpłatę"
+                                className="p-1.5 rounded hover:bg-muted text-muted-foreground text-xs">{t('history')}</button>
+                              <button onClick={() => setDepositTarget(goal)} title={t('addDeposit')}
                                 className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-[#01581E]">
                                 <TrendingUp className="w-4 h-4" />
                               </button>
-                              <button onClick={() => handleStartEdit(goal)} title="Edytuj cel"
+                              <button onClick={() => handleStartEdit(goal)} title={t('editGoal')}
                                 className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
                                 <Pencil className="w-4 h-4" />
                               </button>
@@ -199,17 +202,17 @@ export default function GoalsPage() {
                           <div className="mt-3 space-y-1.5">
                             <div className="flex justify-between text-sm">
                               <span className="font-semibold text-foreground">{fmt(goal.currentAmount)}</span>
-                              <span className="text-muted-foreground">z {fmt(goal.targetAmount)}</span>
+                              <span className="text-muted-foreground">{t('of', { target: fmt(goal.targetAmount) })}</span>
                             </div>
                             <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                               <div className="h-full rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%`, background: goal.color }} />
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>{pct.toFixed(1)}% ukończone</span>
+                              <span>{t('percentComplete', { percent: pct.toFixed(1) })}</span>
                               {days !== null && (
                                 <span className={cn(days < 0 ? 'text-red-500' : days < 30 ? 'text-amber-600' : 'text-muted-foreground')}>
-                                  {days < 0 ? `${Math.abs(days)} dni po terminie` : `${days} dni do celu`}
+                                  {days < 0 ? t('daysOverdue', { days: Math.abs(days) }) : t('daysToGoal', { days })}
                                 </span>
                               )}
                             </div>
@@ -220,12 +223,12 @@ export default function GoalsPage() {
                       {/* Deposit form inline */}
                       {depositTarget?.id === goal.id && (
                         <div className="mt-4 pt-4 border-t border-border">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">Dodaj wpłatę</p>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">{t('addDeposit')}</p>
                           <div className="flex gap-2">
                             <input type="number" step="0.01" min="0" value={depositAmount}
-                              onChange={e => setDepositAmount(e.target.value)} placeholder="Kwota (PLN)"
+                              onChange={e => setDepositAmount(e.target.value)} placeholder={t('depositAmountPlaceholder')}
                               className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
-                            <input value={depositNote} onChange={e => setDepositNote(e.target.value)} placeholder="Opis (opcjonalnie)"
+                            <input value={depositNote} onChange={e => setDepositNote(e.target.value)} placeholder={t('depositNotePlaceholder')}
                               className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
                             <button onClick={() => handleDeposit(goal)} disabled={!depositAmount}
                               className="px-3 py-1.5 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50">
@@ -242,16 +245,16 @@ export default function GoalsPage() {
                     {/* Deposits history */}
                     {isOpen && (
                       <div className="border-t border-border px-5 py-3">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Historia wpłat</p>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('depositHistory')}</p>
                         {goal.deposits.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">Brak wpłat.</p>
+                          <p className="text-sm text-muted-foreground">{t('noDeposits')}</p>
                         ) : (
                           <div className="space-y-1.5">
                             {goal.deposits.slice(0, 10).map(d => (
                               <div key={d.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border last:border-0">
                                 <div>
-                                  <p className="font-medium text-foreground">{d.note ?? 'Wpłata'}</p>
-                                  <p className="text-xs text-muted-foreground">{new Date(d.depositAt).toLocaleDateString('pl-PL')}</p>
+                                  <p className="font-medium text-foreground">{d.note ?? t('defaultDepositNote')}</p>
+                                  <p className="text-xs text-muted-foreground">{new Date(d.depositAt).toLocaleDateString(INTL_LOCALE[locale])}</p>
                                 </div>
                                 <span className="font-semibold text-green-600">+{fmt(d.amount)}</span>
                               </div>
@@ -268,16 +271,16 @@ export default function GoalsPage() {
 
           {completed.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ukończone ({completed.length})</h2>
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t('completedCount', { count: completed.length })}</h2>
               {completed.map(goal => (
                 <div key={goal.id} className="bg-card border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-4 opacity-75">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
                     style={{ background: `${goal.color}20` }}>{goal.icon ?? '🎯'}</div>
                   <div className="flex-1">
                     <p className="font-medium text-foreground">{goal.name}</p>
-                    <p className="text-sm text-green-600 font-medium">✓ Cel osiągnięty — {fmt(goal.currentAmount)}</p>
+                    <p className="text-sm text-green-600 font-medium">{t('goalAchieved', { amount: fmt(goal.currentAmount) })}</p>
                   </div>
-                  <button onClick={() => handleStartEdit(goal)} title="Edytuj cel" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                  <button onClick={() => handleStartEdit(goal)} title={t('editGoal')} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => handleDelete(goal.id, goal.name)} className="p-1.5 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600">
@@ -295,19 +298,19 @@ export default function GoalsPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="font-semibold text-foreground">{editTarget ? 'Edytuj cel' : 'Nowy cel oszczędnościowy'}</h2>
+              <h2 className="font-semibold text-foreground">{editTarget ? t('editGoalModalTitle') : t('newGoalModalTitle')}</h2>
               <button onClick={closeForm}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Nazwa celu *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('nameLabel')}</label>
                 <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="np. Fundusz awaryjny, Wakacje, Nowy samochód..."
+                  placeholder={t('namePlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Ikona celu</label>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">{t('iconLabel')}</label>
                 <div className="flex flex-wrap gap-2">
                   {GOAL_ICONS.map(icon => (
                     <button key={icon} type="button" onClick={() => setForm(f => ({ ...f, icon }))}
@@ -320,7 +323,7 @@ export default function GoalsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Kolor</label>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">{t('colorLabel')}</label>
                 <div className="flex gap-2 flex-wrap">
                   {GOAL_COLORS.map(color => (
                     <button key={color} type="button" onClick={() => setForm(f => ({ ...f, color }))}
@@ -332,35 +335,35 @@ export default function GoalsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Kwota docelowa (PLN) *</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('targetAmountLabel')}</label>
                   <input required type="number" step="0.01" min="0" value={form.targetAmount} onChange={e => setForm(f => ({ ...f, targetAmount: e.target.value }))}
                     placeholder="10000.00" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Już zaoszczędzono (PLN)</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('currentAmountLabel')}</label>
                   <input type="number" step="0.01" min="0" value={form.currentAmount} onChange={e => setForm(f => ({ ...f, currentAmount: e.target.value }))}
                     placeholder="0.00" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Data docelowa (opcjonalnie)</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('targetDateLabel')}</label>
                 <input type="date" value={form.targetDate} onChange={e => setForm(f => ({ ...f, targetDate: e.target.value }))}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Opis</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('descriptionLabel')}</label>
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  rows={2} placeholder="Po co oszczędzasz? (opcjonalnie)"
+                  rows={2} placeholder={t('descriptionPlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E] resize-none" />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeForm} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Anuluj</button>
+                <button type="button" onClick={closeForm} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">{tCommon('cancel')}</button>
                 <button type="submit" disabled={submitting}
                   className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> {editTarget ? 'Zapisz zmiany' : 'Utwórz cel'}</>}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> {editTarget ? t('saveChanges') : t('createGoal')}</>}
                 </button>
               </div>
             </form>
