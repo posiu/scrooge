@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
 
@@ -18,6 +19,7 @@ const tooltipStyle = {
 };
 
 export function ReportIncomeStructure({ month }: { month: string }) {
+  const t = useTranslations('Charts');
   const [data, setData] = useState<{ name: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,14 +33,14 @@ export function ReportIncomeStructure({ month }: { month: string }) {
 
   if (loading) return <div className="h-64 bg-muted/30 rounded-xl animate-pulse" />;
   if (data.length === 0) return (
-    <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">Brak przychodów w wybranym miesiącu</div>
+    <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">{t('noIncomeSelectedMonth')}</div>
   );
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-foreground">Struktura przychodów</h3>
-        <span className="text-sm text-muted-foreground">Łącznie: <span className="font-medium text-green-600">{formatCurrency(total)}</span></span>
+        <h3 className="text-sm font-semibold text-foreground">{t('incomeStructure')}</h3>
+        <span className="text-sm text-muted-foreground">{t('total')} <span className="font-medium text-green-600">{formatCurrency(total)}</span></span>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
         <ResponsiveContainer width="100%" height={260}>
@@ -46,7 +48,7 @@ export function ReportIncomeStructure({ month }: { month: string }) {
             <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} dataKey="value">
               {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
             </Pie>
-            <Tooltip formatter={(v: number) => [formatCurrency(v), 'Kwota']} {...tooltipStyle} />
+            <Tooltip formatter={(v: number) => [formatCurrency(v), t('amount')]} {...tooltipStyle} />
           </PieChart>
         </ResponsiveContainer>
         <div className="space-y-2">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   LineChart,
   Line,
@@ -27,6 +28,7 @@ interface DataPoint {
 }
 
 export function TrendsChart({ fromYear, toYear, metric }: Props) {
+  const t = useTranslations('Charts');
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +44,7 @@ export function TrendsChart({ fromYear, toYear, metric }: Props) {
   if (loading) return <div className="h-64 bg-muted/30 rounded-xl animate-pulse" />;
   if (data.length === 0) return (
     <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">
-      Brak danych dla wybranego okresu
+      {t('noDataForPeriod')}
     </div>
   );
 
@@ -53,9 +55,9 @@ export function TrendsChart({ fromYear, toYear, metric }: Props) {
   };
 
   const metricLabels = {
-    income:  'Przychody',
-    expense: 'Wydatki',
-    savings: 'Oszczędności',
+    income:  t('income'),
+    expense: t('expense'),
+    savings: t('savings'),
   };
 
   return (

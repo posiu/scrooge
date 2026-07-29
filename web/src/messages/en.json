@@ -778,6 +778,26 @@
       { "label": "Type (optional)", "hint": "income/expense/transfer — if missing, inferred from the amount's sign" }
     ]
   },
+  "Charts": {
+    "incomeVsExpense": "Income vs Expenses (6 mo.)",
+    "noData": "No data",
+    "expenseStructure": "Expense breakdown",
+    "incomeStructure": "Income breakdown",
+    "budgetVsActual": "Budget vs. Actuals",
+    "noExpensesThisMonth": "No expenses this month",
+    "noExpensesSelectedMonth": "No expenses in the selected month",
+    "noIncomeSelectedMonth": "No income in the selected month",
+    "noBudgetDataMonth": "No budget data for the selected month",
+    "noDataForPeriod": "No data for the selected period",
+    "income": "Income",
+    "expense": "Expenses",
+    "savings": "Savings",
+    "plan": "Plan",
+    "actual": "Actual",
+    "amount": "Amount",
+    "total": "Total:",
+    "noCategory": "No category"
+  },
   "Sidebar": {
     "tagline": "Home Finance Control",
     "defaultUser": "User",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -32,6 +33,7 @@ const tooltipStyle = {
 };
 
 export function DashboardCharts({ userId, currentMonth }: DashboardChartsProps) {
+  const t = useTranslations('Charts');
   const [categoryData, setCategoryData] = useState<ChartDataPoint[]>([]);
   const [monthlyData, setMonthlyData] = useState<{ month: string; przychody: number; wydatki: number }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,9 +65,9 @@ export function DashboardCharts({ userId, currentMonth }: DashboardChartsProps) 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Monthly income vs expense */}
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Przychody vs Wydatki (6 mies.)</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">{t('incomeVsExpense')}</h3>
         {monthlyData.length === 0 ? (
-          <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">Brak danych</div>
+          <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">{t('noData')}</div>
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={monthlyData} barSize={12} barGap={4}>
@@ -74,7 +76,7 @@ export function DashboardCharts({ userId, currentMonth }: DashboardChartsProps) 
               <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
-                formatter={(value: number, name: string) => [formatCurrency(value), name === 'przychody' ? 'Przychody' : 'Wydatki']}
+                formatter={(value: number, name: string) => [formatCurrency(value), name === 'przychody' ? t('income') : t('expense')]}
                 {...tooltipStyle}
               />
               <Bar dataKey="przychody" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
@@ -86,9 +88,9 @@ export function DashboardCharts({ userId, currentMonth }: DashboardChartsProps) 
 
       {/* Category breakdown pie */}
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Struktura wydatków</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">{t('expenseStructure')}</h3>
         {categoryData.length === 0 ? (
-          <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">Brak wydatków w tym miesiącu</div>
+          <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">{t('noExpensesThisMonth')}</div>
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
