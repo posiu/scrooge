@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Header } from '@/components/layout/Header';
+import type { Locale } from '@/i18n/config';
 import { Brain, Send, Loader2, Settings, Plus, Trash2, Bot, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +38,7 @@ const PROVIDERS = [
   { id: 'custom',     label: 'Custom (OpenAI-compatible)', models: [] },
 ];
 
-function useSessions() {
+function useSessions(defaultTitle: string) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -53,7 +55,7 @@ function useSessions() {
   }
 
   function newSession(): string {
-    const s: Session = { id: crypto.randomUUID(), title: 'Nowa rozmowa', messages: [], createdAt: Date.now() };
+    const s: Session = { id: crypto.randomUUID(), title: defaultTitle, messages: [], createdAt: Date.now() };
     const updated = [s, ...sessions];
     save(updated);
     setActiveId(s.id);
@@ -102,7 +104,10 @@ function useConfig() {
 }
 
 export default function AiChatPage() {
-  const { sessions, activeSession, activeId, setActiveId, newSession, deleteSession, appendMessage } = useSessions();
+  const t = useTranslations('AiChat');
+  const locale = useLocale() as Locale;
+  const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
+  const { sessions, activeSession, activeId, setActiveId, newSession, deleteSession, appendMessage } = useSessions(t('defaultTitle'));
   const { config, showConfig, setShowConfig, saveConfig } = useConfig();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -138,7 +143,7 @@ export default function AiChatPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error ?? 'Błąd serwera');
+        throw new Error(err.error ?? t('errorServer'));
       }
 
       const data = await res.json();
@@ -150,7 +155,7 @@ export default function AiChatPage() {
       };
       appendMessage(currentSessionId, assistantMsg);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Nieznany błąd';
+      const msg = e instanceof Error ? e.message : t('errorUnknown');
       setError(msg);
     } finally {
       setLoading(false);
@@ -166,7 +171,7 @@ export default function AiChatPage() {
             onClick={() => newSession()}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-[#01581E] text-white text-xs font-medium hover:bg-[#01581E]/90 transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" /> Nowa rozmowa
+            <Plus className="w-3.5 h-3.5" /> {t('newConversation')}
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -189,7 +194,7 @@ export default function AiChatPage() {
             </div>
           ))}
           {sessions.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center pt-4">Brak rozmów</p>
+            <p className="text-xs text-muted-foreground text-center pt-4">{t('noConversations')}</p>
           )}
         </div>
         <div className="p-3 border-t border-border">
@@ -197,7 +202,7 @@ export default function AiChatPage() {
             onClick={() => setShowConfig(true)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <Settings className="w-3.5 h-3.5" /> Konfiguracja LLM
+            <Settings className="w-3.5 h-3.5" /> {t('llmConfig')}
           </button>
         </div>
       </div>
@@ -208,7 +213,7 @@ export default function AiChatPage() {
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-[#01581E]" />
             <span className="text-sm font-medium text-foreground">
-              {activeSession?.title ?? 'AI Asystent Finansowy'}
+              {activeSession?.title ?? t('defaultTitle')}
             </span>
             {config && (
               <span className="text-xs text-muted-foreground">· {config.provider}/{config.modelId}</span>
@@ -230,17 +235,16 @@ export default function AiChatPage() {
                 <Brain className="w-7 h-7 text-[#01581E]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground mb-1">Skonfiguruj model AI</p>
+                <p className="text-sm font-medium text-foreground mb-1">{t('configureModel')}</p>
                 <p className="text-xs text-muted-foreground max-w-xs">
-                  Podepnij dowolny model LLM (OpenAI, Anthropic, Google lub własny endpoint).
-                  Klucz API jest przechowywany lokalnie na Twoim urządzeniu.
+                  {t('configureHint')}
                 </p>
               </div>
               <button
                 onClick={() => setShowConfig(true)}
                 className="px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
               >
-                Skonfiguruj teraz
+                {t('configureNow')}
               </button>
             </div>
           )}
@@ -249,14 +253,10 @@ export default function AiChatPage() {
             <div className="flex flex-col items-center justify-center h-full text-center gap-3">
               <Bot className="w-10 h-10 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">
-                Zadaj pytanie dotyczące Twoich finansów.
+                {t('askAboutFinances')}
               </p>
               <div className="flex flex-wrap justify-center gap-2 max-w-sm">
-                {[
-                  'Jakie mam największe wydatki w tym miesiącu?',
-                  'Podsumuj mój budżet za ostatnie 3 miesiące.',
-                  'Gdzie mogę zaoszczędzić?',
-                ].map((q) => (
+                {(t.raw('suggestedQuestions') as string[]).map((q) => (
                   <button
                     key={q}
                     onClick={() => setInput(q)}
@@ -289,7 +289,7 @@ export default function AiChatPage() {
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
                 <p className={cn('text-xs mt-1', msg.role === 'user' ? 'text-white/60' : 'text-muted-foreground')}>
-                  {new Date(msg.timestamp).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(msg.timestamp).toLocaleTimeString(INTL_LOCALE[locale], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
               {msg.role === 'user' && (
@@ -307,7 +307,7 @@ export default function AiChatPage() {
               </div>
               <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Myślę...</span>
+                <span className="text-xs text-muted-foreground">{t('thinking')}</span>
               </div>
             </div>
           )}
@@ -331,7 +331,7 @@ export default function AiChatPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={config ? 'Zadaj pytanie o swoje finanse...' : 'Najpierw skonfiguruj model AI'}
+              placeholder={config ? t('inputPlaceholderReady') : t('inputPlaceholderNotReady')}
               disabled={!config || loading}
               className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#01581E] disabled:opacity-50"
             />
@@ -344,7 +344,7 @@ export default function AiChatPage() {
             </button>
           </form>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            Rozmowy są przechowywane lokalnie na Twoim urządzeniu.
+            {t('localStorageNote')}
           </p>
         </div>
       </div>
@@ -362,6 +362,8 @@ function ConfigModal({ config, onSave, onClose }: {
   onSave: (c: AiConfig) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations('AiChat');
+  const tCommon = useTranslations('Common');
   const [provider, setProvider] = useState(config?.provider ?? 'openai');
   const [modelId, setModelId] = useState(config?.modelId ?? 'gpt-4o');
   const [apiKey, setApiKey] = useState(config?.apiKey ?? '');
@@ -381,15 +383,15 @@ function ConfigModal({ config, onSave, onClose }: {
       <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl">
         <div className="p-5 border-b border-border">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Settings className="w-4 h-4 text-[#01581E]" /> Konfiguracja modelu AI
+            <Settings className="w-4 h-4 text-[#01581E]" /> {t('modalTitle')}
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Klucz API jest przechowywany tylko lokalnie (localStorage) — nigdy nie trafia na serwer w postaci jawnej.
+            {t('modalSubtitle')}
           </p>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="text-xs font-medium text-foreground block mb-1.5">Provider</label>
+            <label className="text-xs font-medium text-foreground block mb-1.5">{t('providerLabel')}</label>
             <select
               value={provider}
               onChange={(e) => { setProvider(e.target.value); setModelId(PROVIDERS.find((p) => p.id === e.target.value)?.models[0] ?? ''); }}
@@ -401,7 +403,7 @@ function ConfigModal({ config, onSave, onClose }: {
 
           {provider !== 'custom' ? (
             <div>
-              <label className="text-xs font-medium text-foreground block mb-1.5">Model</label>
+              <label className="text-xs font-medium text-foreground block mb-1.5">{t('modelLabel')}</label>
               <select
                 value={modelId}
                 onChange={(e) => setModelId(e.target.value)}
@@ -413,7 +415,7 @@ function ConfigModal({ config, onSave, onClose }: {
           ) : (
             <>
               <div>
-                <label className="text-xs font-medium text-foreground block mb-1.5">Endpoint URL</label>
+                <label className="text-xs font-medium text-foreground block mb-1.5">{t('endpointLabel')}</label>
                 <input
                   type="url"
                   value={endpoint}
@@ -423,12 +425,12 @@ function ConfigModal({ config, onSave, onClose }: {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-foreground block mb-1.5">Nazwa modelu</label>
+                <label className="text-xs font-medium text-foreground block mb-1.5">{t('modelNameLabel')}</label>
                 <input
                   type="text"
                   value={customModel}
                   onChange={(e) => setCustomModel(e.target.value)}
-                  placeholder="np. llama-3.1-70b"
+                  placeholder={t('modelNamePlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#01581E]"
                 />
               </div>
@@ -436,7 +438,7 @@ function ConfigModal({ config, onSave, onClose }: {
           )}
 
           <div>
-            <label className="text-xs font-medium text-foreground block mb-1.5">Klucz API</label>
+            <label className="text-xs font-medium text-foreground block mb-1.5">{t('apiKeyLabel')}</label>
             <input
               type="password"
               value={apiKey}
@@ -445,7 +447,7 @@ function ConfigModal({ config, onSave, onClose }: {
               required
               className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#01581E]"
             />
-            <p className="text-xs text-muted-foreground mt-1">Przechowywany tylko lokalnie na tym urządzeniu.</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('apiKeyHint')}</p>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -454,13 +456,13 @@ function ConfigModal({ config, onSave, onClose }: {
               onClick={onClose}
               className="flex-1 px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
-              Anuluj
+              {tCommon('cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors"
             >
-              Zapisz
+              {tCommon('save')}
             </button>
           </div>
         </form>

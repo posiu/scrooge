@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import {
@@ -20,6 +21,7 @@ const IS_DEV = process.env.NODE_ENV === 'development';
 const OTP_LENGTH = 8;
 
 function LoginForm() {
+  const t = useTranslations('Login');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [devPassword, setDevPassword] = useState('');
@@ -51,7 +53,7 @@ function LoginForm() {
 
     if (error) {
       if (error.message.includes('not found') || error.message.includes('not authorized')) {
-        setError('Nie znaleziono konta z tym adresem email. Skontaktuj się z administratorem.');
+        setError(t('errorAccountNotFound'));
       } else {
         setError(error.message);
       }
@@ -95,7 +97,7 @@ function LoginForm() {
     setLoading(false);
 
     if (error) {
-      setError('Nieprawidłowy lub wygasły kod. Spróbuj ponownie.');
+      setError(t('errorInvalidOtp'));
       return;
     }
 
@@ -124,21 +126,20 @@ function LoginForm() {
         {/* Quote */}
         <div className="relative">
           <blockquote className="text-white/90 text-xl font-light leading-relaxed mb-6">
-            "Wiedza o tym, gdzie idą twoje pieniądze, to dopiero
-            <span className="text-white font-medium"> prawdziwa wolność finansowa.</span>"
+            {t.rich('quote', { b: (chunks) => <span className="text-white font-medium">{chunks}</span> })}
           </blockquote>
           <div className="flex gap-6 text-white/70 text-sm">
             <div className="flex flex-col">
               <span className="text-white text-2xl font-bold">100%</span>
-              <span>kontrola danych</span>
+              <span>{t('statControl')}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-white text-2xl font-bold">0 zł</span>
-              <span>prowizji</span>
+              <span>{t('statFees')}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-white text-2xl font-bold">AI</span>
-              <span>asystent</span>
+              <span>{t('statAssistant')}</span>
             </div>
           </div>
         </div>
@@ -159,17 +160,17 @@ function LoginForm() {
             <div className="animate-fade-in">
               <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-foreground mb-2">
-                  Zaloguj się
+                  {t('title')}
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  Wyślemy jednorazowy kod logowania na Twój adres email.
+                  {t('subtitle')}
                 </p>
               </div>
 
               <form onSubmit={handleSendOtp} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium text-foreground">
-                    Adres email
+                    {t('emailLabel')}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -178,7 +179,7 @@ function LoginForm() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="twoj@email.pl"
+                      placeholder={t('emailPlaceholder')}
                       required
                       autoComplete="email"
                       className={cn(
@@ -211,7 +212,7 @@ function LoginForm() {
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      Wyślij kod
+                      {t('sendCode')}
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -221,22 +222,21 @@ function LoginForm() {
               <div className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5 text-[#01581E]" />
                 <p>
-                  Scrooge używa logowania bez hasła (OTP). Twoje dane finansowe
-                  są bezpieczne i dostępne tylko dla Ciebie.
+                  {t('securityNote')}
                 </p>
               </div>
 
               {IS_DEV && (
                 <div className="mt-6 border border-dashed border-amber-400 rounded-lg p-4 bg-amber-50 dark:bg-amber-950/20">
                   <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-3">
-                    🛠 DEV ONLY — logowanie hasłem
+                    {t('devOnlyLabel')}
                   </p>
                   <form onSubmit={handleDevPasswordLogin} className="space-y-2">
                     <input
                       type="password"
                       value={devPassword}
                       onChange={(e) => setDevPassword(e.target.value)}
-                      placeholder="Hasło (z Supabase dashboard)"
+                      placeholder={t('devPasswordPlaceholder')}
                       className="w-full px-3 py-2 rounded-md border border-amber-300 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     <button
@@ -244,7 +244,7 @@ function LoginForm() {
                       disabled={loading || !email.trim() || !devPassword}
                       className="w-full py-2 px-3 rounded-md bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium transition-colors disabled:opacity-50"
                     >
-                      Zaloguj hasłem (dev)
+                      {t('devLoginButton')}
                     </button>
                   </form>
                 </div>
@@ -259,19 +259,21 @@ function LoginForm() {
                   <Mail className="w-6 h-6 text-[#01581E]" />
                 </div>
                 <h1 className="text-2xl font-semibold text-foreground mb-2">
-                  Sprawdź email
+                  {t('checkEmailTitle')}
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  Wysłaliśmy {OTP_LENGTH}-cyfrowy kod na{' '}
-                  <span className="text-foreground font-medium">{email}</span>.
-                  Kod jest ważny przez 10 minut.
+                  {t.rich('checkEmailSubtitle', {
+                    length: OTP_LENGTH,
+                    email,
+                    b: (chunks) => <span className="text-foreground font-medium">{chunks}</span>,
+                  })}
                 </p>
               </div>
 
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="otp" className="text-sm font-medium text-foreground">
-                    Kod jednorazowy
+                    {t('otpLabel')}
                   </label>
                   <input
                     id="otp"
@@ -313,7 +315,7 @@ function LoginForm() {
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      Zaloguj się
+                      {t('loginButton')}
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -328,7 +330,7 @@ function LoginForm() {
                   }}
                   className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  ← Zmień adres email
+                  {t('changeEmail')}
                 </button>
               </form>
             </div>
@@ -340,10 +342,10 @@ function LoginForm() {
                 <CheckCircle2 className="w-8 h-8 text-[#01581E]" />
               </div>
               <h1 className="text-2xl font-semibold text-foreground mb-2">
-                Zalogowano!
+                {t('successTitle')}
               </h1>
               <p className="text-muted-foreground text-sm">
-                Przekierowuję do aplikacji...
+                {t('successSubtitle')}
               </p>
             </div>
           )}

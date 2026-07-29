@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Plus, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 
 interface Props { month: string; userId: string; inline?: boolean }
 
 export function AddBudgetButton({ month, userId, inline }: Props) {
+  const t = useTranslations('BudgetMonth');
+  const tCommon = useTranslations('Common');
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
@@ -34,11 +36,11 @@ export function AddBudgetButton({ month, userId, inline }: Props) {
         }),
       });
       if (!res.ok) throw new Error();
-      toast.success('Budżet dodany');
+      toast.success(t('successAdd'));
       setOpen(false);
       window.location.reload();
     } catch {
-      toast.error('Nie udało się dodać pozycji');
+      toast.error(t('errorAdd'));
     } finally {
       setLoading(false);
     }
@@ -46,11 +48,11 @@ export function AddBudgetButton({ month, userId, inline }: Props) {
 
   const btn = inline ? (
     <button onClick={openModal} className="text-[#01581E] hover:underline text-sm">
-      Dodaj pierwszą pozycję
+      {t('addFirstItem')}
     </button>
   ) : (
     <button onClick={openModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#01581E] text-white text-xs font-medium hover:bg-[#01581E]/90 transition-colors">
-      <Plus className="w-3.5 h-3.5" /> Dodaj kategorię
+      <Plus className="w-3.5 h-3.5" /> {t('addCategoryButton')}
     </button>
   );
 
@@ -61,29 +63,29 @@ export function AddBudgetButton({ month, userId, inline }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">Dodaj pozycję budżetu</h2>
+              <h2 className="text-sm font-semibold text-foreground">{t('addItemModalTitle')}</h2>
               <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-muted"><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-medium text-foreground block mb-1.5">Kategoria *</label>
+                <label className="text-xs font-medium text-foreground block mb-1.5">{t('categoryLabel')}</label>
                 <select name="categoryId" required className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
-                  <option value="">Wybierz kategorię</option>
+                  <option value="">{t('selectCategory')}</option>
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-foreground block mb-1.5">Planowana kwota *</label>
+                <label className="text-xs font-medium text-foreground block mb-1.5">{t('plannedAmountLabel')}</label>
                 <input name="plannedAmount" type="number" step="0.01" min="0" required placeholder="0,00" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
               <div>
-                <label className="text-xs font-medium text-foreground block mb-1.5">Notatka</label>
-                <input name="notes" placeholder="Opcjonalnie" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
+                <label className="text-xs font-medium text-foreground block mb-1.5">{t('notesLabel')}</label>
+                <input name="notes" placeholder={t('notesPlaceholder')} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">Anuluj</button>
+                <button type="button" onClick={() => setOpen(false)} className="flex-1 px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">{tCommon('cancel')}</button>
                 <button type="submit" disabled={loading} className="flex-1 px-4 py-2 rounded-lg bg-[#01581E] text-white text-sm font-medium hover:bg-[#01581E]/90 transition-colors disabled:opacity-50">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Zapisz'}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : tCommon('save')}
                 </button>
               </div>
             </form>

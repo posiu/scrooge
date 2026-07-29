@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { Upload, FileSpreadsheet, ArrowRight, CheckCircle2, AlertTriangle, Loader2, X, RefreshCw, Info } from 'lucide-react';
@@ -10,24 +11,19 @@ type Step = 'upload' | 'map' | 'preview' | 'done';
 
 interface RawRow { [key: string]: string | number | null }
 
-interface MappingField {
-  key: string;
-  label: string;
-  required: boolean;
-  hint: string;
-}
-
-const MAPPING_FIELDS: MappingField[] = [
-  { key: 'date',        label: 'Data',        required: true,  hint: 'Kolumna z datą transakcji (np. DD.MM.YYYY)' },
-  { key: 'amount',      label: 'Kwota',       required: true,  hint: 'Kwota — ujemna = wydatek, dodatnia = przychód' },
-  { key: 'description', label: 'Opis',        required: false, hint: 'Opis / tytuł przelewu' },
-  { key: 'category',    label: 'Kategoria',   required: false, hint: 'Kategoria — zostanie dopasowana automatycznie' },
-  { key: 'type',        label: 'Typ (opcjonalnie)', required: false, hint: 'income/expense/transfer — jeśli brak, wyznaczane ze znaku kwoty' },
-];
+const MAPPING_FIELD_KEYS = ['date', 'amount', 'description', 'category', 'type'] as const;
+const MAPPING_FIELD_REQUIRED: Record<typeof MAPPING_FIELD_KEYS[number], boolean> = {
+  date: true, amount: true, description: false, category: false, type: false,
+};
 
 interface Account { id: string; name: string; }
 
 export default function ImportPage() {
+  const t = useTranslations('Import');
+  const mappingFieldMeta = t.raw('mappingFields') as { label: string; hint: string }[];
+  const MAPPING_FIELDS = MAPPING_FIELD_KEYS.map((key, i) => ({
+    key, required: MAPPING_FIELD_REQUIRED[key], label: mappingFieldMeta[i].label, hint: mappingFieldMeta[i].hint,
+  }));
   const [step, setStep]               = useState<Step>('upload');
   const [headers, setHeaders]         = useState<string[]>([]);
   const [rows, setRows]               = useState<RawRow[]>([]);
@@ -64,7 +60,7 @@ export default function ImportPage() {
           loadAccounts();
           setStep('map');
         },
-        error: () => setError('Błąd parsowania CSV. Sprawdź kodowanie (UTF-8).'),
+        error: () => setError(t('errorCsvParse')),
       });
     } else if (ext === 'xlsx' || ext === 'xls') {
       const reader = new FileReader();
@@ -73,17 +69,17 @@ export default function ImportPage() {
           const wb = XLSX.read(e.target?.result, { type: 'array', cellDates: true });
           const ws = wb.Sheets[wb.SheetNames[0]];
           const data = XLSX.utils.sheet_to_json<RawRow>(ws, { defval: '' });
-          if (data.length === 0) { setError('Arkusz jest pusty.'); return; }
+          if (data.length === 0) { setError(t('errorEmptySheet')); return; }
           setHeaders(Object.keys(data[0]));
           setRows(data.slice(0, 1000));
           setFileName(file.name);
           loadAccounts();
           setStep('map');
-        } catch { setError('Błąd czytania pliku Excel.'); }
+        } catch { setError(t('errorExcelRead')); }
       };
       reader.readAsArrayBuffer(file);
     } else {
-      setError('Nieobsługiwany format. Użyj pliku .csv, .xlsx lub .xls');
+      setError(t('errorUnsupportedFormat'));
     }
   }
 
@@ -136,8 +132,8 @@ export default function ImportPage() {
       });
       const data = await res.json();
       if (res.ok) { setResult(data); setStep('done'); }
-      else setError(data.error ?? 'Błąd importu');
-    } catch { setError('Błąd sieci'); }
+      else setError(data.error ?? t('errorImport'));
+    } catch { setError(t('errorNetwork')); }
     setImporting(false);
   }
 
@@ -158,8 +154,8 @@ export default function ImportPage() {
           <FileSpreadsheet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Import transakcji</h1>
-          <p className="text-sm text-muted-foreground">Wczytaj transakcje z pliku Excel (.xlsx) lub CSV</p>
+          <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -176,7 +172,7 @@ export default function ImportPage() {
               {['upload', 'map', 'preview', 'done'].indexOf(step) > i ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
             </div>
             <span className={cn('text-xs font-medium', step === s ? 'text-foreground' : 'text-muted-foreground')}>
-              {['Plik', 'Mapowanie', 'Podgląd', 'Gotowe'][i]}
+              {[t('stepFile'), t('stepMapping'), t('stepPreview'), t('stepDone')][i]}
             </span>
             {i < 3 && <ArrowRight className="w-3 h-3 text-muted-foreground" />}
           </div>
@@ -198,9 +194,9 @@ export default function ImportPage() {
           onClick={() => fileRef.current?.click()}
         >
           <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <p className="text-foreground font-medium mb-2">Przeciągnij plik lub kliknij, aby wybrać</p>
-          <p className="text-sm text-muted-foreground">Obsługiwane formaty: .xlsx, .xls, .csv</p>
-          <p className="text-xs text-muted-foreground mt-2">Maksymalnie 1 000 wierszy na import</p>
+          <p className="text-foreground font-medium mb-2">{t('dropzoneTitle')}</p>
+          <p className="text-sm text-muted-foreground">{t('dropzoneFormats')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('dropzoneLimit')}</p>
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv,.txt" className="hidden" onChange={onFileChange} />
         </div>
       )}
@@ -211,19 +207,19 @@ export default function ImportPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileSpreadsheet className="w-4 h-4" />
-              <span><strong className="text-foreground">{fileName}</strong> — {rows.length} wierszy</span>
+              <span><strong className="text-foreground">{fileName}</strong> — {t('rowsCount', { count: rows.length })}</span>
             </div>
             <button onClick={autoGuess} className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
-              <RefreshCw className="w-3 h-3" /> Auto-dopasowanie
+              <RefreshCw className="w-3 h-3" /> {t('autoMatch')}
             </button>
           </div>
 
           <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Dopasuj kolumny pliku</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t('matchColumnsTitle')}</h3>
             <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
               <p className="text-xs text-blue-700 dark:text-blue-400">
-                Dopasuj każde pole Scrooge do odpowiedniej kolumny w Twoim pliku. Kliknij <strong>"Auto-dopasowanie"</strong> aby spróbować automatycznie.
+                {t.rich('matchColumnsHint', { b: (chunks) => <strong>{chunks}</strong> })}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,7 +233,7 @@ export default function ImportPage() {
                     onChange={e => setMapping(m => ({ ...m, [field.key]: e.target.value }))}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]"
                   >
-                    <option value="">— nie mapuj —</option>
+                    <option value="">{t('noMap')}</option>
                     {headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                   <p className="text-xs text-muted-foreground">{field.hint}</p>
@@ -247,17 +243,17 @@ export default function ImportPage() {
 
             <div className="pt-2 border-t border-border space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Konto docelowe *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('targetAccountLabel')}</label>
                 <select value={accountId} onChange={e => setAccountId(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
-                  <option value="">— wybierz konto —</option>
+                  <option value="">{t('selectAccount')}</option>
                   {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={skipDupes} onChange={e => setSkipDupes(e.target.checked)}
                   className="rounded border-border text-[#01581E] focus:ring-[#01581E]" />
-                <span className="text-sm text-foreground">Pomijaj duplikaty (taka sama data + kwota + opis)</span>
+                <span className="text-sm text-foreground">{t('skipDuplicates')}</span>
               </label>
             </div>
           </div>
@@ -266,16 +262,16 @@ export default function ImportPage() {
           {previewRows.length > 0 && mapping.date && (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="px-5 py-3 border-b border-border">
-                <h3 className="text-sm font-semibold text-foreground">Podgląd ({Math.min(5, rows.length)} z {rows.length} wierszy)</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t('previewTitle', { shown: Math.min(5, rows.length), total: rows.length })}</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">Data</th>
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">Kwota</th>
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">Opis</th>
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">Kategoria</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">{t('colDate')}</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">{t('colAmount')}</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">{t('colDescription')}</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">{t('colCategory')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -299,10 +295,10 @@ export default function ImportPage() {
           )}
 
           <div className="flex gap-3">
-            <button onClick={reset} className="px-4 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Zacznij od nowa</button>
+            <button onClick={reset} className="px-4 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">{t('startOver')}</button>
             <button onClick={doImport} disabled={!canProceed || importing}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50">
-              {importing ? <><Loader2 className="w-4 h-4 animate-spin" /> Importuję...</> : <><Upload className="w-4 h-4" /> Importuj {rows.length} transakcji</>}
+              {importing ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('importing')}</> : <><Upload className="w-4 h-4" /> {t('importButton', { count: rows.length })}</>}
             </button>
           </div>
         </div>
@@ -316,28 +312,28 @@ export default function ImportPage() {
               <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Import zakończony!</h2>
-              <p className="text-muted-foreground mt-1">Transakcje zostały pomyślnie zaimportowane</p>
+              <h2 className="text-xl font-semibold text-foreground">{t('doneTitle')}</h2>
+              <p className="text-muted-foreground mt-1">{t('doneSubtitle')}</p>
             </div>
             <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
               <div className="bg-muted/40 rounded-xl p-3">
                 <p className="text-2xl font-bold text-green-600">{result.imported}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Zaimportowanych</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('imported')}</p>
               </div>
               <div className="bg-muted/40 rounded-xl p-3">
                 <p className="text-2xl font-bold text-muted-foreground">{result.skipped}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Pominięto</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('skipped')}</p>
               </div>
               <div className="bg-muted/40 rounded-xl p-3">
                 <p className="text-2xl font-bold text-amber-600">{result.errors}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Błędów</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('errorsLabel')}</p>
               </div>
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={reset} className="flex-1 py-2.5 border border-border rounded-lg text-sm hover:bg-muted">Importuj kolejny plik</button>
+            <button onClick={reset} className="flex-1 py-2.5 border border-border rounded-lg text-sm hover:bg-muted">{t('importAnother')}</button>
             <a href="/transactions" className="flex-1 py-2.5 bg-[#01581E] text-white rounded-lg text-sm font-medium text-center hover:bg-[#01581E]/90">
-              Przejdź do transakcji →
+              {t('goToTransactions')}
             </a>
           </div>
         </div>
