@@ -69,7 +69,36 @@
     "securityBody": "Passwordless login (OTP), encrypted data in Supabase, Row Level Security — no one but you can access your finances. AI conversations are stored locally on your device.",
     "securityPoints": ["Passwordless OTP login", "Row Level Security", "AI chat stored locally", "Data encryption"],
     "ctaTitle": "Ready to take control of your finances?",
-    "ctaSubtitle": "Scrooge is launching soon. Join the waitlist and be first in line when we open access."
+    "ctaSubtitle": "Scrooge is launching soon. Join the waitlist and be first in line when we open access.",
+    "screens": {
+      "tabs": {
+        "dashboard": "Dashboard",
+        "budget": "Monthly budget",
+        "liabilities": "Liabilities",
+        "investments": "Investments",
+        "trends": "Trends"
+      },
+      "categoryFood": "Food",
+      "categoryTransport": "Transport",
+      "categoryEntertainment": "Entertainment",
+      "categoryBills": "Bills",
+      "categoryOther": "Other",
+      "liabilityMortgage": "Mortgage",
+      "liabilityBankLoan": "Bank loan",
+      "liabilityCreditCard": "Credit card",
+      "liabilitySubscriptions": "Subscriptions",
+      "subscriptionsDetail": "Netflix, Spotify, Disney+",
+      "investmentStocks": "mWIG40 stocks",
+      "investmentEtf": "S&P 500 ETF",
+      "investmentCrypto": "BTC / ETH",
+      "investmentDeposit": "1-year deposit",
+      "paymentPrefix": "Payment:",
+      "trendsChartTitle": "Expenses 2022–2026",
+      "monthApr": "Apr",
+      "monthMay": "May",
+      "monthJun": "Jun",
+      "monthJul": "Jul"
+    }
   },
   "Pricing": {
     "title": "Pricing",

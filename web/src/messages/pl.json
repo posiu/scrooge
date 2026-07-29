@@ -69,7 +69,36 @@
     "securityBody": "Logowanie bez hasła (OTP), szyfrowanie danych w Supabase, Row Level Security — nikt poza Tobą nie ma dostępu do Twoich finansów. Konwersacje z AI są przechowywane lokalnie na Twoim urządzeniu.",
     "securityPoints": ["Logowanie OTP bez hasła", "Row Level Security", "AI chat lokalnie na urządzeniu", "Szyfrowanie danych"],
     "ctaTitle": "Gotowy na kontrolę finansów?",
-    "ctaSubtitle": "Scrooge startuje wkrótce. Zapisz się na waitlistę i bądź pierwszy, gdy otworzymy dostęp."
+    "ctaSubtitle": "Scrooge startuje wkrótce. Zapisz się na waitlistę i bądź pierwszy, gdy otworzymy dostęp.",
+    "screens": {
+      "tabs": {
+        "dashboard": "Dashboard",
+        "budget": "Budżet miesięczny",
+        "liabilities": "Zobowiązania",
+        "investments": "Inwestycje",
+        "trends": "Trendy"
+      },
+      "categoryFood": "Jedzenie",
+      "categoryTransport": "Transport",
+      "categoryEntertainment": "Rozrywka",
+      "categoryBills": "Rachunki",
+      "categoryOther": "Inne",
+      "liabilityMortgage": "Kredyt hipoteczny",
+      "liabilityBankLoan": "Pożyczka bankowa",
+      "liabilityCreditCard": "Karta kredytowa",
+      "liabilitySubscriptions": "Subskrypcje",
+      "subscriptionsDetail": "Netflix, Spotify, Disney+",
+      "investmentStocks": "Akcje mWIG40",
+      "investmentEtf": "ETF S&P 500",
+      "investmentCrypto": "BTC / ETH",
+      "investmentDeposit": "Lokata roczna",
+      "paymentPrefix": "Rata:",
+      "trendsChartTitle": "Wydatki 2022–2026",
+      "monthApr": "Kw",
+      "monthMay": "Maj",
+      "monthJun": "Cze",
+      "monthJul": "Lip"
+    }
   },
   "Pricing": {
     "title": "Cennik",
