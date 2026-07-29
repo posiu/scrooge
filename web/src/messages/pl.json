@@ -1001,5 +1001,30 @@
     "quickMonthlyBudget": "Budżet miesiąca",
     "quickAccounts": "Stan kont",
     "quickAskAi": "Zapytaj AI"
+  },
+  "ApiErrors": {
+    "Unauthorized": "Brak autoryzacji",
+    "Forbidden": "Brak dostępu",
+    "Not found": "Nie znaleziono",
+    "Missing id": "Brak identyfikatora",
+    "Invalid request": "Nieprawidłowe żądanie",
+    "Invalid account": "Nieprawidłowe konto",
+    "Invalid target account": "Nieprawidłowe konto docelowe",
+    "Invalid category": "Nieprawidłowa kategoria",
+    "Cannot delete system category": "Nie można usunąć kategorii systemowej",
+    "Cannot delete your own account": "Nie możesz usunąć własnego konta",
+    "Cannot change your own access": "Nie możesz zmienić dostępu własnego konta",
+    "Provide suspension days": "Podaj liczbę dni zawieszenia",
+    "Too many attempts": "Zbyt wiele prób. Spróbuj ponownie za godzinę.",
+    "Provide a valid email, name and accept the consent": "Podaj prawidłowy adres email, imię i zaakceptuj zgodę.",
+    "Template not found": "Szablon nie znaleziony",
+    "Template has no items": "Szablon nie ma pozycji",
+    "Unsupported provider": "Nieobsługiwany dostawca",
+    "Invalid model id": "Nieprawidłowy identyfikator modelu",
+    "Invalid endpoint": "Nieprawidłowy endpoint",
+    "Custom endpoint must use https://": "Niestandardowy endpoint musi używać https://",
+    "This endpoint address is not allowed": "Ten adres endpointu jest niedozwolony",
+    "Could not resolve endpoint address": "Nie udało się rozwiązać adresu endpointu",
+    "Failed to create user": "Nie udało się utworzyć użytkownika"
   }
 }

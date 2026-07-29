@@ -7,11 +7,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { translateApiError } from '@/lib/apiError';
 
 type State = 'idle' | 'loading' | 'success' | 'error';
 
 export default function AdminPage() {
   const t = useTranslations('Admin');
+  const tErr = useTranslations('ApiErrors');
   const [seedState, setSeedState] = useState<State>('idle');
   const [clearState, setClearState] = useState<State>('idle');
   const [msg, setMsg] = useState('');
@@ -30,8 +32,8 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/demo', { method: 'POST' });
       const data = await res.json();
-      if (res.ok) { setSeedState('success'); setMsg(data.message ?? t('seedDone')); }
-      else { setSeedState('error'); setMsg(data.error ?? t('seedError')); }
+      if (res.ok) { setSeedState('success'); setMsg(t('seedDone')); }
+      else { setSeedState('error'); setMsg(translateApiError(data.error, tErr, t('seedError'))); }
     } catch {
       setSeedState('error'); setMsg(t('networkError'));
     }
@@ -44,8 +46,8 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/demo', { method: 'DELETE' });
       const data = await res.json();
-      if (res.ok) { setClearState('success'); setMsg(data.message ?? t('clearDone')); }
-      else { setClearState('error'); setMsg(data.error ?? t('seedError')); }
+      if (res.ok) { setClearState('success'); setMsg(t('clearDone')); }
+      else { setClearState('error'); setMsg(translateApiError(data.error, tErr, t('seedError'))); }
     } catch {
       setClearState('error'); setMsg(t('networkError'));
     }

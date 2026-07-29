@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   const { rows, accountId, mapping, skipDuplicates } = parsed.data;
 
   if (!(await userOwnsAccount(user.id, accountId))) {
-    return NextResponse.json({ error: 'Nieprawidłowe konto' }, { status: 403 });
+    return NextResponse.json({ error: 'Invalid account' }, { status: 403 });
   }
 
   // Load user categories for auto-mapping

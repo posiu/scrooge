@@ -18,7 +18,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { id } = await params;
   if (id === user.id) {
-    return NextResponse.json({ error: 'Nie możesz zmienić dostępu własnego konta' }, { status: 400 });
+    return NextResponse.json({ error: 'Cannot change your own access' }, { status: 400 });
   }
 
   const body = await req.json();
@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   } else if (data.action === 'unblock') {
     banDuration = 'none';
   } else {
-    if (!data.days) return NextResponse.json({ error: 'Podaj liczbę dni zawieszenia' }, { status: 400 });
+    if (!data.days) return NextResponse.json({ error: 'Provide suspension days' }, { status: 400 });
     banDuration = `${data.days * 24}h`;
   }
 

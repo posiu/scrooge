@@ -15,7 +15,7 @@ const RequestSchema = z.object({
   })),
   config: z.object({
     provider: z.string(),
-    modelId:  z.string().regex(/^[a-zA-Z0-9._:-]+$/, 'Nieprawidłowy identyfikator modelu'),
+    modelId:  z.string().regex(/^[a-zA-Z0-9._:-]+$/, 'Invalid model id'),
     apiKey:   z.string(),
     endpoint: z.string().url().optional(),
   }),
@@ -57,20 +57,20 @@ function isPrivateOrReservedIp(ip: string): boolean {
 async function assertSafeEndpoint(rawUrl: string): Promise<string[]> {
   const url = new URL(rawUrl);
   if (url.protocol !== 'https:') {
-    throw new Error('Niestandardowy endpoint musi używać https://');
+    throw new Error('Custom endpoint must use https://');
   }
   const hostname = url.hostname.toLowerCase();
   if (hostname === 'localhost' || isPrivateOrReservedIp(hostname)) {
-    throw new Error('Ten adres endpointu jest niedozwolony');
+    throw new Error('This endpoint address is not allowed');
   }
   let addresses: { address: string; family: number }[];
   try {
     addresses = await dns.lookup(hostname, { all: true });
   } catch {
-    throw new Error('Nie udało się rozwiązać adresu endpointu');
+    throw new Error('Could not resolve endpoint address');
   }
   if (addresses.length === 0 || addresses.some((a) => isPrivateOrReservedIp(a.address))) {
-    throw new Error('Ten adres endpointu jest niedozwolony');
+    throw new Error('This endpoint address is not allowed');
   }
   return addresses.map((a) => a.address);
 }
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
     try {
       pinnedAddresses = await assertSafeEndpoint(endpoint);
     } catch (e) {
-      return NextResponse.json({ error: e instanceof Error ? e.message : 'Nieprawidłowy endpoint' }, { status: 400 });
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Invalid endpoint' }, { status: 400 });
     }
     // Pin the connection to exactly the IPs we just validated — resolving the
     // hostname again inside undici would reopen a DNS-rebinding window.

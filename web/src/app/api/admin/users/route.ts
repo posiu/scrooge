@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     email_confirm: true,
   });
   if (createError || !created.user) {
-    return NextResponse.json({ error: createError?.message ?? 'Nie udało się utworzyć użytkownika' }, { status: 400 });
+    return NextResponse.json({ error: createError?.message ?? 'Failed to create user' }, { status: 400 });
   }
 
   const [settings] = await db.insert(userSettings).values({

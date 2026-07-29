@@ -14,13 +14,13 @@ const WaitlistSchema = z.object({
 export async function POST(req: NextRequest) {
   const allowed = await checkRateLimit(`waitlist:${getClientIp(req)}`, 5, 3600);
   if (!allowed) {
-    return NextResponse.json({ error: 'Zbyt wiele prób. Spróbuj ponownie za godzinę.' }, { status: 429 });
+    return NextResponse.json({ error: 'Too many attempts' }, { status: 429 });
   }
 
   const body = await req.json();
   const parsed = WaitlistSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Podaj prawidłowy adres email, imię i zaakceptuj zgodę.' }, { status: 400 });
+    return NextResponse.json({ error: 'Provide a valid email, name and accept the consent' }, { status: 400 });
   }
 
   const { data } = parsed;

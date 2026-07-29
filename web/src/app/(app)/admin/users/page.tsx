@@ -8,6 +8,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/i18n/config';
+import { translateApiError } from '@/lib/apiError';
 
 const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
 
@@ -49,6 +50,7 @@ const emptyForm = { email: '', firstName: '', lastName: '', currency: 'PLN', pla
 
 export default function AdminUsersPage() {
   const t = useTranslations('AdminUsers');
+  const tErr = useTranslations('ApiErrors');
   const tCommon = useTranslations('Common');
   const locale = useLocale() as Locale;
   const statusLabel = (s: ReturnType<typeof getStatus>) =>
@@ -99,7 +101,7 @@ export default function AdminUsersPage() {
           });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(typeof data.error === 'string' ? data.error : t('saveError'));
+        setError(translateApiError(data.error, tErr, t('saveError')));
         return;
       }
       setShowForm(false);

@@ -46,13 +46,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data } = parsed;
 
   if (data.accountId !== undefined && !(await userOwnsAccount(user.id, data.accountId))) {
-    return NextResponse.json({ error: 'Nieprawidłowe konto' }, { status: 403 });
+    return NextResponse.json({ error: 'Invalid account' }, { status: 403 });
   }
   if (data.transferToAccountId && !(await userOwnsAccount(user.id, data.transferToAccountId))) {
-    return NextResponse.json({ error: 'Nieprawidłowe konto docelowe' }, { status: 403 });
+    return NextResponse.json({ error: 'Invalid target account' }, { status: 403 });
   }
   if (data.categoryId && !(await userCanUseCategory(user.id, data.categoryId))) {
-    return NextResponse.json({ error: 'Nieprawidłowa kategoria' }, { status: 403 });
+    return NextResponse.json({ error: 'Invalid category' }, { status: 403 });
   }
 
   const updateData: Record<string, unknown> = { updatedAt: new Date() };

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Bell, X, Check, Loader2 } from 'lucide-react';
+import { translateApiError } from '@/lib/apiError';
 
 interface WaitlistButtonProps {
   className: string;
@@ -14,6 +15,7 @@ interface WaitlistButtonProps {
 export function WaitlistButton({ className, children }: WaitlistButtonProps) {
   const t = useTranslations('Waitlist');
   const tCommon = useTranslations('Common');
+  const tErr = useTranslations('ApiErrors');
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
   const [email, setEmail] = useState('');
@@ -49,7 +51,7 @@ export function WaitlistButton({ className, children }: WaitlistButtonProps) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(typeof data.error === 'string' ? data.error : t('errorGeneric'));
+        setError(translateApiError(data.error, tErr, t('errorGeneric')));
         return;
       }
       setDone(true);

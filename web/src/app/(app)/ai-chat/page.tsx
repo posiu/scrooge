@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header';
 import type { Locale } from '@/i18n/config';
 import { Brain, Send, Loader2, Settings, Plus, Trash2, Bot, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { translateApiError } from '@/lib/apiError';
 
 interface Message {
   id: string;
@@ -105,6 +106,7 @@ function useConfig() {
 
 export default function AiChatPage() {
   const t = useTranslations('AiChat');
+  const tErr = useTranslations('ApiErrors');
   const locale = useLocale() as Locale;
   const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
   const { sessions, activeSession, activeId, setActiveId, newSession, deleteSession, appendMessage } = useSessions(t('defaultTitle'));
@@ -143,7 +145,7 @@ export default function AiChatPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error ?? t('errorServer'));
+        throw new Error(translateApiError(err.error, tErr, t('errorServer')));
       }
 
       const data = await res.json();

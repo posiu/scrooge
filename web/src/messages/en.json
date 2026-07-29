@@ -1001,5 +1001,30 @@
     "quickMonthlyBudget": "Monthly budget",
     "quickAccounts": "Account balances",
     "quickAskAi": "Ask AI"
+  },
+  "ApiErrors": {
+    "Unauthorized": "Unauthorized",
+    "Forbidden": "Forbidden",
+    "Not found": "Not found",
+    "Missing id": "Missing id",
+    "Invalid request": "Invalid request",
+    "Invalid account": "Invalid account",
+    "Invalid target account": "Invalid target account",
+    "Invalid category": "Invalid category",
+    "Cannot delete system category": "Cannot delete system category",
+    "Cannot delete your own account": "You cannot delete your own account",
+    "Cannot change your own access": "You cannot change your own access",
+    "Provide suspension days": "Please provide the number of suspension days",
+    "Too many attempts": "Too many attempts. Please try again in an hour.",
+    "Provide a valid email, name and accept the consent": "Please provide a valid email, name, and accept the consent",
+    "Template not found": "Template not found",
+    "Template has no items": "Template has no items",
+    "Unsupported provider": "Unsupported provider",
+    "Invalid model id": "Invalid model ID",
+    "Invalid endpoint": "Invalid endpoint",
+    "Custom endpoint must use https://": "Custom endpoint must use https://",
+    "This endpoint address is not allowed": "This endpoint address is not allowed",
+    "Could not resolve endpoint address": "Could not resolve the endpoint address",
+    "Failed to create user": "Failed to create user"
   }
 }

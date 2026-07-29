@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const allowed = await checkRateLimit(`feature-requests:${getClientIp(req)}`, 5, 3600);
   if (!allowed) {
-    return NextResponse.json({ error: 'Zbyt wiele prób. Spróbuj ponownie za godzinę.' }, { status: 429 });
+    return NextResponse.json({ error: 'Too many attempts' }, { status: 429 });
   }
 
   const supabase = await createClient();

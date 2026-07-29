@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { Upload, FileSpreadsheet, ArrowRight, CheckCircle2, AlertTriangle, Loader2, X, RefreshCw, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { translateApiError } from '@/lib/apiError';
 
 type Step = 'upload' | 'map' | 'preview' | 'done';
 
@@ -20,6 +21,7 @@ interface Account { id: string; name: string; }
 
 export default function ImportPage() {
   const t = useTranslations('Import');
+  const tErr = useTranslations('ApiErrors');
   const mappingFieldMeta = t.raw('mappingFields') as { label: string; hint: string }[];
   const MAPPING_FIELDS = MAPPING_FIELD_KEYS.map((key, i) => ({
     key, required: MAPPING_FIELD_REQUIRED[key], label: mappingFieldMeta[i].label, hint: mappingFieldMeta[i].hint,
@@ -132,7 +134,7 @@ export default function ImportPage() {
       });
       const data = await res.json();
       if (res.ok) { setResult(data); setStep('done'); }
-      else setError(data.error ?? t('errorImport'));
+      else setError(translateApiError(data.error, tErr, t('errorImport')));
     } catch { setError(t('errorNetwork')); }
     setImporting(false);
   }

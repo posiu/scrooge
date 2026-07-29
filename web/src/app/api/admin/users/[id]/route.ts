@@ -49,7 +49,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   const { id } = await params;
   if (id === user.id) {
-    return NextResponse.json({ error: 'Nie możesz usunąć własnego konta' }, { status: 400 });
+    return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
   }
 
   const supabaseAdmin = await createAdminClient();
