@@ -5,7 +5,10 @@
     "signOut": "Sign out",
     "settings": "Settings",
     "toggleTheme": "Toggle theme",
-    "switchLanguage": "Switch to Polish"
+    "switchLanguage": "Switch to Polish",
+    "cancel": "Cancel",
+    "save": "Save",
+    "all": "All"
   },
   "Nav": {
     "features": "Features",
@@ -67,6 +70,200 @@
     "securityPoints": ["Passwordless OTP login", "Row Level Security", "AI chat stored locally", "Data encryption"],
     "ctaTitle": "Ready to take control of your finances?",
     "ctaSubtitle": "Scrooge is launching soon. Join the waitlist and be first in line when we open access."
+  },
+  "Pricing": {
+    "title": "Pricing",
+    "subtitle": "Choose the plan that matches how closely you want to control your home budget.",
+    "mostPopular": "Most popular",
+    "footnote": "Paid plan details and billing will be finalised soon.",
+    "plans": [
+      {
+        "name": "Free", "price": "0 zł", "period": null,
+        "description": "Basic home budget tracking.",
+        "cta": "Start for free",
+        "features": [
+          { "label": "Transactions and accounts", "included": true },
+          { "label": "Monthly budget", "included": true },
+          { "label": "Liabilities and savings goals", "included": true },
+          { "label": "AI financial assistant", "included": false },
+          { "label": "Charts and reports", "included": false },
+          { "label": "Trend analysis", "included": false },
+          { "label": "Enforcement proceedings", "included": false },
+          { "label": "Investment management", "included": false },
+          { "label": "Excel data import", "included": false }
+        ]
+      },
+      {
+        "name": "Basic", "price": "99 zł", "period": "/ month",
+        "description": "Full budget control with analysis and data import.",
+        "cta": "Choose Basic",
+        "features": [
+          { "label": "Everything in Free", "included": true },
+          { "label": "Taxes", "included": true },
+          { "label": "Charts and reports", "included": true },
+          { "label": "Trend analysis", "included": true },
+          { "label": "Excel data import", "included": true },
+          { "label": "Budget templates", "included": true },
+          { "label": "AI financial assistant", "included": false },
+          { "label": "Enforcement proceedings", "included": false },
+          { "label": "Investment management", "included": false }
+        ]
+      },
+      {
+        "name": "Pro", "price": "299 zł", "period": "/ month",
+        "description": "Everything Scrooge offers, without limits.",
+        "cta": "Choose Pro",
+        "features": [
+          { "label": "Everything in Basic", "included": true },
+          { "label": "AI financial assistant", "included": true },
+          { "label": "Enforcement proceedings", "included": true },
+          { "label": "Investment management", "included": true },
+          { "label": "Portfolio tracking: stocks, bonds, ETFs, crypto and more", "included": true }
+        ]
+      }
+    ]
+  },
+  "Roadmap": {
+    "title": "Public Roadmap",
+    "subtitle": "Submit ideas, vote, and track progress.",
+    "submitIdea": "Submit idea",
+    "allCount": "All ({count})",
+    "statusOpen": "Open",
+    "statusPlanned": "Planned",
+    "statusInProgress": "In progress",
+    "statusDone": "Done",
+    "statusRejected": "Rejected",
+    "empty": "No submissions yet. Be the first!",
+    "anonymous": "Anonymous",
+    "adminResponse": "Admin response:",
+    "formTitle": "Submit a new idea",
+    "titleLabel": "Title *",
+    "titlePlaceholder": "Short, specific feature description",
+    "descriptionLabel": "Description *",
+    "descriptionPlaceholder": "Describe in detail what you need and why it matters...",
+    "nameLabel": "Name",
+    "namePlaceholder": "Optional",
+    "emailLabel": "Email",
+    "emailPlaceholder": "For notifications",
+    "submit": "Submit idea",
+    "submitError": "Couldn't submit your idea. Please try again."
+  },
+  "Privacy": {
+    "pageTitle": "Privacy Policy",
+    "updated": "Last updated: 28 July 2026",
+    "s1title": "1. Data controller",
+    "s1p1": "The controller of personal data processed in connection with the use of the Scrooge app (the “App”, the “Service”) is:",
+    "s1block": "[TO BE COMPLETED: full legal name and form of the Service Provider]\n[TO BE COMPLETED: registered address]\n[TO BE COMPLETED: Tax ID / company registration number]\nContact for data protection matters: [TO BE COMPLETED: contact email address]",
+    "s1p2": "Throughout this document, the Controller is referred to as “we”, and the person using the App as the “User” or “you”.",
+    "s2title": "2. What data we process",
+    "s2intro": "Depending on how you use the App, we process:",
+    "s2items": [
+      "Account data — the email address used for passwordless login (one-time OTP code) via Supabase Auth.",
+      "Financial data you enter — transactions (date, amount, type, description, tags), accounts (bank, cash, crypto, funds, insurance policies), categories, monthly budgets, liabilities (loans, instalments, subscriptions), savings goals, investments, taxes and enforcement proceedings — to the extent you enter them into the App yourself or import them from an Excel file.",
+      "Data from Excel import files — processed solely to populate your transactions; the source file is not retained once the import completes.",
+      "Data from the waitlist sign-up form — first name, email address, and the timestamp of the consent given to be contacted.",
+      "Data from feature requests and roadmap votes — the content of the submission, and optionally a name and email address if provided.",
+      "AI assistant settings and API keys — if you enable the AI assistant, its configuration (including your own API key for the chosen provider) is stored only locally in your browser (localStorage) and never reaches our database.",
+      "AI assistant conversation content — likewise stored only locally on your device; our database stores only session metadata (title, model, message count), never the message content.",
+      "Technical data — IP address and request timestamps, used short-term to protect public forms from abuse (rate limiting)."
+    ],
+    "s3title": "3. Purposes and legal bases for processing",
+    "s3items": [
+      "Providing the Service (Art. 6(1)(b) GDPR) — creating and running your account, storing and displaying your financial data, generating charts and reports.",
+      "Consent (Art. 6(1)(a) GDPR) — the waitlist sign-up and contact about the product launch; you can withdraw consent at any time.",
+      "The Controller's legitimate interest (Art. 6(1)(f) GDPR) — App security, abuse prevention (rate limiting), maintaining service continuity, pursuing legal claims.",
+      "Legal obligation (Art. 6(1)(c) GDPR) — where required by law (e.g. handling complaints)."
+    ],
+    "s4title": "4. Who we share data with",
+    "s4intro": "Your data may be processed by the following parties, strictly to the extent necessary to provide the Service:",
+    "s4items": [
+      "Supabase — provider of the PostgreSQL database and authentication mechanism (OTP login).",
+      "Vercel — provider of the hosting and serverless infrastructure the App runs on.",
+      "The AI provider you choose (e.g. OpenAI, Anthropic, Google, or another OpenAI-API-compatible provider) — only if you configure and use the AI assistant yourself. In that case, the content of your query is sent directly to the chosen provider to generate a response. This transfer may involve moving data outside the European Economic Area — we recommend reviewing the chosen provider's privacy policy before using this feature."
+    ],
+    "s4outro": "We do not sell your data and do not share it with third parties for marketing purposes.",
+    "s5title": "5. How long we keep data",
+    "s5items": [
+      "Account and financial data — for as long as you hold an account in the App.",
+      "Transactions you delete are marked as deleted (not visible in the App) and permanently removed when the account is deleted.",
+      "Waitlist data — until consent is withdrawn or the product publicly launches, plus a reasonable period afterwards.",
+      "Technical data used for abuse protection — no longer than 30 days."
+    ],
+    "s6title": "6. Your rights",
+    "s6intro": "Under the GDPR you have the right to:",
+    "s6items": [
+      "access your data,",
+      "rectify inaccurate data,",
+      "erasure of data (\"the right to be forgotten\"),",
+      "restrict processing,",
+      "data portability — you can export your transactions and budget from the App to an Excel/CSV file at any time,",
+      "object to processing,",
+      "withdraw consent at any time, without affecting the lawfulness of processing carried out before its withdrawal,",
+      "lodge a complaint with the President of the Personal Data Protection Office (PUODO)."
+    ],
+    "s6outro": "To exercise the rights above, including the right to delete your account and all associated data, write to us at: [TO BE COMPLETED: contact email address]. Account deletion is currently handled manually by the administrator after verifying the request.",
+    "s7title": "7. Data security",
+    "s7p1": "Access to financial data is restricted to the User account it belongs to (row-level access control — RLS). Connections to the App are encrypted (HTTPS). AI API keys and AI assistant conversation content are never sent to our servers or stored in our database.",
+    "s8title": "8. Cookies and local storage",
+    "s8p1": "We use only essential cookies to maintain your login session (Supabase Auth), plus data stored locally in your browser (localStorage) to remember your chosen theme (light/dark), chosen language, AI assistant configuration, and AI assistant conversation content. We do not use advertising or third-party analytics cookies.",
+    "s9title": "9. Changes to this Privacy Policy",
+    "s9p1": "We may update this Privacy Policy from time to time. We will notify you of material changes through the App or by email. The date of the last update appears at the top of this document.",
+    "s10title": "10. Contact",
+    "s10p1": "For matters related to personal data protection, contact us at: [TO BE COMPLETED: contact email address]."
+  },
+  "Terms": {
+    "pageTitle": "Terms of Service",
+    "updated": "Last updated: 28 July 2026",
+    "s1title": "1. General provisions",
+    "s1p1": "These Terms of Service set out the rules for using the Scrooge — Home Finance Control app (the “App”, the “Service”), available at usescrooge.com and app.usescrooge.com.",
+    "s1p2": "The Service Provider is [TO BE COMPLETED: full legal name and form of the Service Provider], [TO BE COMPLETED: registered address], Tax ID: [TO BE COMPLETED], contact: [TO BE COMPLETED: contact email address] (the “Service Provider”).",
+    "s1p3": "The rules for processing personal data are set out separately in the <link>Privacy Policy</link>, which supplements these Terms.",
+    "s2title": "2. Definitions",
+    "s2items": [
+      "App / Service — the Scrooge web app for managing a home budget.",
+      "User — a natural person using the App.",
+      "Account — a User's individual profile in the App, secured by passwordless login (a one-time code sent by email).",
+      "AI assistant — an optional App feature using third-party language model providers, configured and paid for by the User themself."
+    ],
+    "s3title": "3. Scope of the Service",
+    "s3intro": "The App enables, in particular:",
+    "s3items": [
+      "recording transactions, accounts, categories, and monthly budgets,",
+      "tracking liabilities (loans, instalments, subscriptions), savings goals, investments, taxes, and enforcement proceedings,",
+      "importing data from Excel files,",
+      "exporting data to Excel/CSV files,",
+      "financial charts and reports,",
+      "using the optional AI financial assistant, once the User provides their own API key for the chosen provider,",
+      "submitting and voting on proposed new features (roadmap)."
+    ],
+    "s3outro": "The scope of available features may depend on the chosen plan — see the <link>pricing</link> page for details.",
+    "s4title": "4. Registration and account",
+    "s4p1": "Creating an Account requires providing an email address and confirming it with a one-time code (passwordless login). The User is responsible for keeping access to their email inbox confidential — all actions taken after logging into an Account are treated as actions of that User.",
+    "s4p2": "Only adults with full legal capacity may use the App.",
+    "s5title": "5. Plans and payments",
+    "s5p1": "The App is currently available in a waitlist model ahead of public launch. The intended subscription plans (Free, Basic, Pro) and billing rules will be described in detail before they become available — the current outline is on the <link>pricing</link> page.",
+    "s6title": "6. User obligations",
+    "s6items": [
+      "providing truthful information when registering and using the App,",
+      "using the App in accordance with the law and good practice,",
+      "not attempting unauthorised access to the App or other Users' data,",
+      "sole responsibility for the accuracy of financial data entered manually or imported from Excel files,",
+      "when using the AI assistant — independently obtaining, configuring, and covering the cost of the API key with the chosen third-party provider, and complying with that provider's terms of use."
+    ],
+    "s7title": "7. Limitation of liability",
+    "s7p1": "The App is a tool that supports financial awareness and does not constitute financial, investment, tax, or legal advice. Financial decisions made based on the data and analyses presented in the App are the User's own responsibility.",
+    "s7p2": "The Service Provider is not liable for consequences arising from incorrect or incomplete data entered by the User, errors in imported files, or content generated by the AI assistant, which may contain inaccuracies.",
+    "s7p3": "The Service Provider makes reasonable efforts to keep the App running continuously and correctly, but does not guarantee full availability of the Service and reserves the right to technical interruptions, including for maintenance and updates.",
+    "s8title": "8. Complaints",
+    "s8p1": "Complaints about how the App operates can be submitted to: [TO BE COMPLETED: contact email address]. A complaint should include a description of the issue and the User's contact details. The Service Provider will handle the complaint within 14 days of receiving it.",
+    "s9title": "9. Termination and account deletion",
+    "s9p1": "The User may stop using the App at any time and request deletion of their Account along with associated data by contacting: [TO BE COMPLETED: contact email address]. The rules and retention period for data after account deletion are described in the <link>Privacy Policy</link>.",
+    "s10title": "10. Intellectual property",
+    "s10p1": "The App, its code, name, logo, and visual design are the property of the Service Provider and are protected by copyright. Financial data entered by the User remains their own property — the Service Provider processes it solely to provide the Service.",
+    "s11title": "11. Changes to these Terms",
+    "s11p1": "The Service Provider reserves the right to change these Terms for good cause (e.g. a change in the scope of the Service, a change in the law). Users will be notified of changes with reasonable advance notice through the App or by email.",
+    "s12title": "12. Final provisions",
+    "s12p1": "Matters not covered by these Terms are governed by Polish law, including the Civil Code and the Act on the Provision of Electronic Services. Any disputes will be resolved by the competent court in accordance with applicable law."
   },
   "Sidebar": {
     "tagline": "Home Finance Control",

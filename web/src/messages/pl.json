@@ -5,7 +5,10 @@
     "signOut": "Wyloguj się",
     "settings": "Ustawienia",
     "toggleTheme": "Zmień motyw",
-    "switchLanguage": "Przełącz na angielski"
+    "switchLanguage": "Przełącz na angielski",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "all": "Wszystkie"
   },
   "Nav": {
     "features": "Funkcje",
@@ -67,6 +70,200 @@
     "securityPoints": ["Logowanie OTP bez hasła", "Row Level Security", "AI chat lokalnie na urządzeniu", "Szyfrowanie danych"],
     "ctaTitle": "Gotowy na kontrolę finansów?",
     "ctaSubtitle": "Scrooge startuje wkrótce. Zapisz się na waitlistę i bądź pierwszy, gdy otworzymy dostęp."
+  },
+  "Pricing": {
+    "title": "Cennik",
+    "subtitle": "Wybierz plan dopasowany do tego, jak dokładnie chcesz kontrolować swój domowy budżet.",
+    "mostPopular": "Najpopularniejszy",
+    "footnote": "Szczegóły planów płatnych oraz sposób rozliczenia zostaną doprecyzowane wkrótce.",
+    "plans": [
+      {
+        "name": "Free", "price": "0 zł", "period": null,
+        "description": "Podstawowe śledzenie budżetu domowego.",
+        "cta": "Zacznij za darmo",
+        "features": [
+          { "label": "Transakcje i konta", "included": true },
+          { "label": "Budżet miesięczny", "included": true },
+          { "label": "Zobowiązania i cele oszczędnościowe", "included": true },
+          { "label": "AI Asystent finansowy", "included": false },
+          { "label": "Wykresy i raporty", "included": false },
+          { "label": "Analiza trendów", "included": false },
+          { "label": "Zajęcia egzekucyjne", "included": false },
+          { "label": "Zarządzanie inwestycjami", "included": false },
+          { "label": "Import danych z Excela", "included": false }
+        ]
+      },
+      {
+        "name": "Basic", "price": "99 zł", "period": "/ miesiąc",
+        "description": "Pełna kontrola budżetu z analizą i importem danych.",
+        "cta": "Wybierz Basic",
+        "features": [
+          { "label": "Wszystko z planu Free", "included": true },
+          { "label": "Podatki", "included": true },
+          { "label": "Wykresy i raporty", "included": true },
+          { "label": "Analiza trendów", "included": true },
+          { "label": "Import danych z Excela", "included": true },
+          { "label": "Szablony budżetów", "included": true },
+          { "label": "AI Asystent finansowy", "included": false },
+          { "label": "Zajęcia egzekucyjne", "included": false },
+          { "label": "Zarządzanie inwestycjami", "included": false }
+        ]
+      },
+      {
+        "name": "Pro", "price": "299 zł", "period": "/ miesiąc",
+        "description": "Wszystkie możliwości Scrooge, bez ograniczeń.",
+        "cta": "Wybierz Pro",
+        "features": [
+          { "label": "Wszystko z planu Basic", "included": true },
+          { "label": "AI Asystent finansowy", "included": true },
+          { "label": "Zajęcia egzekucyjne", "included": true },
+          { "label": "Zarządzanie inwestycjami", "included": true },
+          { "label": "Śledzenie portfela: akcje, obligacje, ETF, krypto i więcej", "included": true }
+        ]
+      }
+    ]
+  },
+  "Roadmap": {
+    "title": "Public Roadmap",
+    "subtitle": "Zgłaszaj pomysły, głosuj i śledź postęp.",
+    "submitIdea": "Zgłoś pomysł",
+    "allCount": "Wszystkie ({count})",
+    "statusOpen": "Otwarte",
+    "statusPlanned": "Planowane",
+    "statusInProgress": "W realizacji",
+    "statusDone": "Zrealizowane",
+    "statusRejected": "Odrzucone",
+    "empty": "Brak zgłoszeń. Bądź pierwszy!",
+    "anonymous": "Anonim",
+    "adminResponse": "Odpowiedź admina:",
+    "formTitle": "Zgłoś nowy pomysł",
+    "titleLabel": "Tytuł *",
+    "titlePlaceholder": "Krótki, konkretny opis funkcji",
+    "descriptionLabel": "Opis *",
+    "descriptionPlaceholder": "Opisz szczegółowo czego potrzebujesz i dlaczego to ważne...",
+    "nameLabel": "Imię",
+    "namePlaceholder": "Opcjonalnie",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Do powiadomień",
+    "submit": "Wyślij zgłoszenie",
+    "submitError": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie."
+  },
+  "Privacy": {
+    "pageTitle": "Polityka Prywatności",
+    "updated": "Ostatnia aktualizacja: 28 lipca 2026 r.",
+    "s1title": "1. Administrator danych",
+    "s1p1": "Administratorem danych osobowych przetwarzanych w związku z korzystaniem z aplikacji Scrooge (dalej: „Aplikacja”, „Usługa”) jest:",
+    "s1block": "[DO UZUPEŁNIENIA: pełna nazwa i forma prawna Usługodawcy]\n[DO UZUPEŁNIENIA: adres siedziby]\n[DO UZUPEŁNIENIA: NIP / REGON]\nKontakt w sprawach danych osobowych: [DO UZUPEŁNIENIA: adres e-mail kontaktowy]",
+    "s1p2": "W dalszej części dokumentu Administrator określany jest jako „my”, a osoba korzystająca z Aplikacji jako „Użytkownik” lub „Ty”.",
+    "s2title": "2. Jakie dane przetwarzamy",
+    "s2intro": "W zależności od sposobu korzystania z Aplikacji przetwarzamy:",
+    "s2items": [
+      "Dane konta — adres e-mail używany do logowania bez hasła (kod jednorazowy OTP) za pośrednictwem Supabase Auth.",
+      "Dane finansowe wprowadzane przez Ciebie — transakcje (data, kwota, typ, opis, tagi), konta (bank, gotówka, kryptowaluty, fundusze, polisy), kategorie, budżety miesięczne, zobowiązania (kredyty, raty, subskrypcje), cele oszczędnościowe, inwestycje, podatki i zajęcia egzekucyjne — w zakresie, w jakim samodzielnie wprowadzisz je do Aplikacji lub zaimportujesz z pliku Excel.",
+      "Dane z importu plików Excel — przetwarzane wyłącznie w celu zasilenia Twoich transakcji; plik źródłowy nie jest przechowywany po zakończeniu importu.",
+      "Dane z formularza listy oczekujących (waitlist) — imię, adres e-mail oraz znacznik czasu wyrażonej zgody na kontakt.",
+      "Dane ze zgłoszeń funkcji i głosów na roadmapie — treść zgłoszenia, opcjonalnie imię i adres e-mail, jeśli zostaną podane.",
+      "Ustawienia i klucze API AI-asystenta — jeśli włączysz AI-asystenta, jego konfiguracja (w tym Twój własny klucz API do wybranego dostawcy) jest przechowywana wyłącznie lokalnie w Twojej przeglądarce (localStorage) i nigdy nie trafia do naszej bazy danych.",
+      "Treść rozmów z AI-asystentem — analogicznie przechowywana wyłącznie lokalnie na Twoim urządzeniu; w naszej bazie zapisujemy jedynie metadane sesji (tytuł, model, liczba wiadomości), nigdy treść wiadomości.",
+      "Dane techniczne — adres IP i znaczniki czasu żądań, wykorzystywane krótkoterminowo do ochrony formularzy publicznych przed nadużyciami (limitowanie liczby zgłoszeń)."
+    ],
+    "s3title": "3. Cele i podstawy prawne przetwarzania",
+    "s3items": [
+      "Świadczenie Usługi (art. 6 ust. 1 lit. b RODO) — założenie i obsługa konta, przechowywanie i prezentowanie Twoich danych finansowych, generowanie wykresów i raportów.",
+      "Zgoda (art. 6 ust. 1 lit. a RODO) — zapis na listę oczekujących i kontakt w sprawie uruchomienia produktu; zgodę możesz wycofać w dowolnym momencie.",
+      "Prawnie uzasadniony interes Administratora (art. 6 ust. 1 lit. f RODO) — bezpieczeństwo Aplikacji, przeciwdziałanie nadużyciom (rate limiting), utrzymanie ciągłości działania, dochodzenie roszczeń.",
+      "Obowiązek prawny (art. 6 ust. 1 lit. c RODO) — jeśli wynika to z przepisów prawa (np. rozpatrywanie reklamacji)."
+    ],
+    "s4title": "4. Komu przekazujemy dane",
+    "s4intro": "Twoje dane mogą być przetwarzane przez następujące podmioty, wyłącznie w zakresie niezbędnym do świadczenia Usługi:",
+    "s4items": [
+      "Supabase — dostawca bazy danych PostgreSQL i mechanizmu uwierzytelniania (logowanie OTP).",
+      "Vercel — dostawca hostingu i infrastruktury serverless, na której działa Aplikacja.",
+      "Dostawca AI wybrany przez Ciebie (np. OpenAI, Anthropic, Google lub inny kompatybilny z API OpenAI) — wyłącznie jeśli samodzielnie skonfigurujesz i użyjesz AI-asystenta. W takim przypadku treść Twojego zapytania jest przesyłana bezpośrednio do wybranego dostawcy w celu wygenerowania odpowiedzi. Taki transfer może wiązać się z przekazaniem danych poza Europejski Obszar Gospodarczy — zalecamy zapoznanie się z polityką prywatności wybranego dostawcy przed skorzystaniem z tej funkcji."
+    ],
+    "s4outro": "Nie sprzedajemy Twoich danych i nie przekazujemy ich podmiotom trzecim w celach marketingowych.",
+    "s5title": "5. Jak długo przechowujemy dane",
+    "s5items": [
+      "Dane konta i dane finansowe — przez czas posiadania konta w Aplikacji.",
+      "Usunięte przez Ciebie transakcje są oznaczane jako usunięte (nie są widoczne w Aplikacji) i usuwane trwale przy usunięciu konta.",
+      "Dane z listy oczekujących — do czasu wycofania zgody albo publicznego uruchomienia produktu i rozsądnego okresu po nim.",
+      "Dane techniczne służące ochronie przed nadużyciami — nie dłużej niż 30 dni."
+    ],
+    "s6title": "6. Twoje prawa",
+    "s6intro": "Zgodnie z RODO przysługuje Ci prawo do:",
+    "s6items": [
+      "dostępu do swoich danych,",
+      "sprostowania nieprawidłowych danych,",
+      "usunięcia danych („prawo do bycia zapomnianym”),",
+      "ograniczenia przetwarzania,",
+      "przenoszenia danych — swoje transakcje i budżet możesz w każdej chwili wyeksportować z poziomu Aplikacji do pliku Excel/CSV,",
+      "wniesienia sprzeciwu wobec przetwarzania,",
+      "cofnięcia zgody w dowolnym momencie, bez wpływu na zgodność z prawem przetwarzania dokonanego przed jej cofnięciem,",
+      "wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (PUODO)."
+    ],
+    "s6outro": "Aby skorzystać z powyższych praw, w tym z prawa do usunięcia konta i wszystkich powiązanych danych, napisz do nas na adres: [DO UZUPEŁNIENIA: adres e-mail kontaktowy]. Usunięcie konta jest obecnie realizowane ręcznie przez administratora po weryfikacji zgłoszenia.",
+    "s7title": "7. Bezpieczeństwo danych",
+    "s7p1": "Dostęp do danych finansowych jest ograniczony wyłącznie do konta Użytkownika, do którego należą (mechanizm kontroli dostępu na poziomie wiersza — RLS). Połączenia z Aplikacją są szyfrowane (HTTPS). Klucze API do AI oraz treść rozmów z AI-asystentem nigdy nie są przesyłane na nasze serwery ani zapisywane w naszej bazie danych.",
+    "s8title": "8. Pliki cookies i przechowywanie lokalne",
+    "s8p1": "Używamy wyłącznie niezbędnych plików cookies do utrzymania sesji logowania (Supabase Auth) oraz danych zapisanych lokalnie w przeglądarce (localStorage) do zapamiętania wybranego motywu (jasny/ciemny), wybranego języka, konfiguracji AI-asystenta i treści rozmów z AI-asystentem. Nie używamy cookies reklamowych ani analitycznych podmiotów trzecich.",
+    "s9title": "9. Zmiany Polityki Prywatności",
+    "s9p1": "Możemy okresowo aktualizować niniejszą Politykę Prywatności. O istotnych zmianach poinformujemy Cię poprzez Aplikację lub wiadomość e-mail. Data ostatniej aktualizacji widnieje na początku dokumentu.",
+    "s10title": "10. Kontakt",
+    "s10p1": "W sprawach związanych z ochroną danych osobowych skontaktuj się z nami: [DO UZUPEŁNIENIA: adres e-mail kontaktowy]."
+  },
+  "Terms": {
+    "pageTitle": "Regulamin",
+    "updated": "Ostatnia aktualizacja: 28 lipca 2026 r.",
+    "s1title": "1. Postanowienia ogólne",
+    "s1p1": "Niniejszy Regulamin określa zasady korzystania z aplikacji Scrooge — Domowy Controlling (dalej: „Aplikacja”, „Usługa”), dostępnej pod adresem usescrooge.com i app.usescrooge.com.",
+    "s1p2": "Usługodawcą jest [DO UZUPEŁNIENIA: pełna nazwa i forma prawna Usługodawcy], [DO UZUPEŁNIENIA: adres siedziby], NIP: [DO UZUPEŁNIENIA], kontakt: [DO UZUPEŁNIENIA: adres e-mail kontaktowy] (dalej: „Usługodawca”).",
+    "s1p3": "Zasady przetwarzania danych osobowych opisane są odrębnie w <link>Polityce Prywatności</link>, która stanowi uzupełnienie niniejszego Regulaminu.",
+    "s2title": "2. Definicje",
+    "s2items": [
+      "Aplikacja / Usługa — aplikacja webowa Scrooge służąca do zarządzania budżetem domowym.",
+      "Użytkownik — osoba fizyczna korzystająca z Aplikacji.",
+      "Konto — indywidualny profil Użytkownika w Aplikacji, zabezpieczony logowaniem bez hasła (kod jednorazowy wysyłany na adres e-mail).",
+      "AI-asystent — opcjonalna funkcja Aplikacji korzystająca z zewnętrznych dostawców modeli językowych, konfigurowana i opłacana samodzielnie przez Użytkownika."
+    ],
+    "s3title": "3. Zakres Usługi",
+    "s3intro": "Aplikacja umożliwia w szczególności:",
+    "s3items": [
+      "ewidencję transakcji, kont, kategorii i budżetów miesięcznych,",
+      "śledzenie zobowiązań (kredyty, raty, subskrypcje), celów oszczędnościowych, inwestycji, podatków i zajęć egzekucyjnych,",
+      "import danych z plików Excel,",
+      "eksport danych do plików Excel/CSV,",
+      "wykresy i raporty finansowe,",
+      "korzystanie z opcjonalnego AI-asystenta finansowego, po podaniu przez Użytkownika własnego klucza API do wybranego dostawcy,",
+      "zgłaszanie i głosowanie na propozycje nowych funkcji (roadmapa)."
+    ],
+    "s3outro": "Zakres dostępnych funkcji może zależeć od wybranego planu — szczegóły znajdziesz na stronie <link>cennika</link>.",
+    "s4title": "4. Rejestracja i konto",
+    "s4p1": "Założenie Konta wymaga podania adresu e-mail i potwierdzenia go jednorazowym kodem (logowanie bez hasła). Użytkownik jest zobowiązany do zachowania poufności dostępu do swojej skrzynki e-mail — wszystkie działania wykonane po zalogowaniu na Konto uznaje się za działania Użytkownika.",
+    "s4p2": "Z Aplikacji mogą korzystać wyłącznie osoby pełnoletnie, posiadające pełną zdolność do czynności prawnych.",
+    "s5title": "5. Plany i płatności",
+    "s5p1": "Aplikacja jest obecnie dostępna w modelu listy oczekujących (waitlist) przed publicznym uruchomieniem. Docelowe plany subskrypcyjne (Free, Basic, Pro) oraz zasady rozliczeń zostaną szczegółowo opisane przed ich udostępnieniem — aktualny zarys znajduje się na stronie <link>cennika</link>.",
+    "s6title": "6. Obowiązki Użytkownika",
+    "s6items": [
+      "podawanie prawdziwych danych podczas rejestracji i korzystania z Aplikacji,",
+      "korzystanie z Aplikacji zgodnie z prawem i dobrymi obyczajami,",
+      "niepodejmowanie prób nieautoryzowanego dostępu do Aplikacji lub danych innych Użytkowników,",
+      "samodzielna odpowiedzialność za poprawność danych finansowych wprowadzanych ręcznie lub importowanych z plików Excel,",
+      "w przypadku korzystania z AI-asystenta — samodzielne pozyskanie, konfiguracja i pokrycie kosztów klucza API u wybranego dostawcy zewnętrznego oraz przestrzeganie warunków korzystania tego dostawcy."
+    ],
+    "s7title": "7. Ograniczenie odpowiedzialności",
+    "s7p1": "Aplikacja jest narzędziem wspierającym świadomość finansową i nie stanowi doradztwa finansowego, inwestycyjnego, podatkowego ani prawnego. Decyzje finansowe podejmowane na podstawie danych i analiz prezentowanych w Aplikacji Użytkownik podejmuje na własną odpowiedzialność.",
+    "s7p2": "Usługodawca nie ponosi odpowiedzialności za skutki wynikające z nieprawidłowych lub niepełnych danych wprowadzonych przez Użytkownika, błędów w importowanych plikach ani za treści wygenerowane przez AI-asystenta, które mogą zawierać nieścisłości.",
+    "s7p3": "Usługodawca dokłada starań, aby Aplikacja działała nieprzerwanie i poprawnie, jednak nie gwarantuje pełnej dostępności Usługi i zastrzega sobie prawo do przerw technicznych, w tym w celu konserwacji i aktualizacji.",
+    "s8title": "8. Reklamacje",
+    "s8p1": "Reklamacje dotyczące działania Aplikacji można zgłaszać na adres: [DO UZUPEŁNIENIA: adres e-mail kontaktowy]. Reklamacja powinna zawierać opis problemu oraz dane kontaktowe Użytkownika. Usługodawca rozpatrzy reklamację w terminie 14 dni od jej otrzymania.",
+    "s9title": "9. Rozwiązanie umowy i usunięcie konta",
+    "s9p1": "Użytkownik może w każdej chwili zrezygnować z korzystania z Aplikacji i zażądać usunięcia Konta wraz z powiązanymi danymi, kontaktując się na adres: [DO UZUPEŁNIENIA: adres e-mail kontaktowy]. Zasady i okres przechowywania danych po usunięciu Konta opisane są w <link>Polityce Prywatności</link>.",
+    "s10title": "10. Własność intelektualna",
+    "s10p1": "Aplikacja, jej kod, nazwa, logo i szata graficzna stanowią własność Usługodawcy i są chronione prawem autorskim. Dane finansowe wprowadzone przez Użytkownika pozostają jego własnością — Usługodawca przetwarza je wyłącznie w celu świadczenia Usługi.",
+    "s11title": "11. Zmiany Regulaminu",
+    "s11p1": "Usługodawca zastrzega sobie prawo do zmiany Regulaminu z ważnych przyczyn (np. zmiana zakresu Usługi, zmiana przepisów prawa). O zmianach Użytkownicy zostaną poinformowani z odpowiednim wyprzedzeniem poprzez Aplikację lub wiadomość e-mail.",
+    "s12title": "12. Postanowienia końcowe",
+    "s12p1": "W sprawach nieuregulowanych niniejszym Regulaminem zastosowanie mają przepisy prawa polskiego, w tym Kodeksu cywilnego oraz ustawy o świadczeniu usług drogą elektroniczną. Ewentualne spory będą rozstrzygane przez sąd właściwy zgodnie z obowiązującymi przepisami."
   },
   "Sidebar": {
     "tagline": "Domowy Controlling",
