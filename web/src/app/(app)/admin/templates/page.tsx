@@ -1,18 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { FileStack, Plus, Copy, Trash2, Loader2, X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Locale } from '@/i18n/config';
 
 interface TemplateItem { id: string; categoryId: string; plannedAmount: string; category?: { name: string; type: string } | null; }
 interface Template { id: string; name: string; description: string | null; isDefault: boolean; items: TemplateItem[]; }
 interface Category { id: string; name: string; type: string; }
 
 const TYPE_COLORS: Record<string, string> = { income: 'text-green-600', expense: 'text-red-500', obligation: 'text-amber-600' };
-
-function fmt(n: string | number) { return Number(n).toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' }); }
+const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
 
 export default function TemplatesPage() {
+  const tr = useTranslations('AdminTemplates');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale() as Locale;
+  const fmt = (n: string | number) => Number(n).toLocaleString(INTL_LOCALE[locale], { style: 'currency', currency: 'PLN' });
   const [templates, setTemplates] = useState<Template[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +53,7 @@ export default function TemplatesPage() {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Usunąć szablon "${name}"?`)) return;
+    if (!confirm(tr('deleteConfirm', { name }))) return;
     await fetch(`/api/budget/templates/${id}`, { method: 'DELETE' });
     load();
   }
@@ -70,13 +75,13 @@ export default function TemplatesPage() {
             <FileStack className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Szablony budżetów</h1>
-            <p className="text-sm text-muted-foreground">Zapisz strukturę budżetu i stosuj ją w kolejnych miesiącach</p>
+            <h1 className="text-xl font-semibold text-foreground">{tr('title')}</h1>
+            <p className="text-sm text-muted-foreground">{tr('subtitle')}</p>
           </div>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors">
-          <Plus className="w-4 h-4" /> Nowy szablon
+          <Plus className="w-4 h-4" /> {tr('newTemplate')}
         </button>
       </div>
 
@@ -85,8 +90,8 @@ export default function TemplatesPage() {
       ) : templates.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <FileStack className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">Brak szablonów</p>
-          <p className="text-xs text-muted-foreground">Utwórz pierwszy szablon budżetu, aby szybko planować kolejne miesiące.</p>
+          <p className="text-sm font-medium text-foreground mb-1">{tr('empty')}</p>
+          <p className="text-xs text-muted-foreground">{tr('emptyHint')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -99,7 +104,7 @@ export default function TemplatesPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                        {t.isDefault && <span className="text-xs px-1.5 py-0.5 rounded bg-[#01581E]/10 text-[#01581E]">domyślny</span>}
+                        {t.isDefault && <span className="text-xs px-1.5 py-0.5 rounded bg-[#01581E]/10 text-[#01581E]">{tr('defaultBadge')}</span>}
                       </div>
                       {t.description && <p className="text-xs text-muted-foreground mt-0.5">{t.description}</p>}
                     </div>
@@ -110,18 +115,18 @@ export default function TemplatesPage() {
                   </div>
 
                   <div className="flex justify-between text-xs text-muted-foreground mb-3">
-                    <span>Przychody: <strong className="text-green-600">{fmt(incomeTotal(t))}</strong></span>
-                    <span>Wydatki: <strong className="text-red-500">{fmt(expenseTotal(t))}</strong></span>
+                    <span>{tr('income')} <strong className="text-green-600">{fmt(incomeTotal(t))}</strong></span>
+                    <span>{tr('expense')} <strong className="text-red-500">{fmt(expenseTotal(t))}</strong></span>
                   </div>
 
                   <div className="flex gap-2">
                     <button onClick={() => setApplyModal(t)}
                       className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#01581E] text-white text-xs font-medium hover:bg-[#01581E]/90 transition-colors">
-                      <Copy className="w-3 h-3" /> Zastosuj
+                      <Copy className="w-3 h-3" /> {tr('apply')}
                     </button>
                     <button onClick={() => setExpanded(isOpen ? null : t.id)}
                       className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1">
-                      {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />} {t.items.length} pozycji
+                      {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />} {tr('itemsCount', { count: t.items.length })}
                     </button>
                   </div>
                 </div>
@@ -131,7 +136,7 @@ export default function TemplatesPage() {
                     {t.items.map(item => (
                       <div key={item.id} className="flex justify-between text-xs">
                         <span className={cn('text-muted-foreground', TYPE_COLORS[item.category?.type ?? 'expense'])}>
-                          {item.category?.name ?? 'Bez kategorii'}
+                          {item.category?.name ?? tr('noCategory')}
                         </span>
                         <span className="text-foreground font-medium">{fmt(item.plannedAmount)}</span>
                       </div>
@@ -149,43 +154,43 @@ export default function TemplatesPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="font-semibold text-foreground">Nowy szablon budżetu</h2>
+              <h2 className="font-semibold text-foreground">{tr('createModalTitle')}</h2>
               <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleCreate} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Nazwa szablonu *</label>
+                <label className="text-xs font-medium text-muted-foreground">{tr('nameLabel')}</label>
                 <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="np. Budżet domowy standardowy"
+                  placeholder={tr('namePlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Opis</label>
+                <label className="text-xs font-medium text-muted-foreground">{tr('descriptionLabel')}</label>
                 <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="Opcjonalny opis szablonu"
+                  placeholder={tr('descriptionPlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground">Pozycje budżetowe</label>
+                  <label className="text-xs font-medium text-muted-foreground">{tr('budgetItemsLabel')}</label>
                   <button type="button" onClick={() => setItems(i => [...i, { categoryId: '', plannedAmount: '' }])}
-                    className="text-xs text-[#01581E] hover:underline">+ Dodaj pozycję</button>
+                    className="text-xs text-[#01581E] hover:underline">{tr('addItem')}</button>
                 </div>
                 {items.map((item, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
                     <select value={item.categoryId} onChange={e => setItems(i => i.map((it, j) => j === idx ? { ...it, categoryId: e.target.value } : it))}
                       className="flex-1 px-2 py-1.5 rounded-lg border border-border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-[#01581E]">
-                      <option value="">— kategoria —</option>
+                      <option value="">{tr('selectCategory')}</option>
                       {['income', 'expense', 'obligation'].map(type => (
-                        <optgroup key={type} label={type === 'income' ? 'Przychody' : type === 'expense' ? 'Wydatki' : 'Zobowiązania'}>
+                        <optgroup key={type} label={type === 'income' ? tr('typeIncome') : type === 'expense' ? tr('typeExpense') : tr('typeObligation')}>
                           {categories.filter(c => c.type === type).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </optgroup>
                       ))}
                     </select>
                     <input type="number" step="0.01" min="0" value={item.plannedAmount}
                       onChange={e => setItems(i => i.map((it, j) => j === idx ? { ...it, plannedAmount: e.target.value } : it))}
-                      placeholder="0.00 PLN" className="w-28 px-2 py-1.5 rounded-lg border border-border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-[#01581E]" />
+                      placeholder={tr('amountPlaceholder')} className="w-28 px-2 py-1.5 rounded-lg border border-border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-[#01581E]" />
                     {items.length > 1 && (
                       <button type="button" onClick={() => setItems(i => i.filter((_, j) => j !== idx))}
                         className="p-1 text-muted-foreground hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
@@ -195,10 +200,10 @@ export default function TemplatesPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Anuluj</button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">{tCommon('cancel')}</button>
                 <button type="submit" disabled={submitting}
                   className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Zapisz szablon</>}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> {tr('saveTemplate')}</>}
                 </button>
               </div>
             </form>
@@ -210,17 +215,17 @@ export default function TemplatesPage() {
       {applyModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-sm p-5 space-y-4">
-            <h2 className="font-semibold text-foreground">Zastosuj szablon "{applyModal.name}"</h2>
-            <p className="text-sm text-muted-foreground">Wybierz miesiąc, dla którego chcesz wygenerować budżet na podstawie tego szablonu.</p>
+            <h2 className="font-semibold text-foreground">{tr('applyModalTitle', { name: applyModal.name })}</h2>
+            <p className="text-sm text-muted-foreground">{tr('applyModalDesc')}</p>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Miesiąc (YYYY-MM)</label>
+              <label className="text-xs font-medium text-muted-foreground">{tr('monthLabel')}</label>
               <input type="month" value={applyMonth} onChange={e => setApplyMonth(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setApplyModal(null)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Anuluj</button>
+              <button onClick={() => setApplyModal(null)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">{tCommon('cancel')}</button>
               <button onClick={handleApply} className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90">
-                <Copy className="w-4 h-4 inline mr-1" /> Zastosuj
+                <Copy className="w-4 h-4 inline mr-1" /> {tr('apply')}
               </button>
             </div>
           </div>

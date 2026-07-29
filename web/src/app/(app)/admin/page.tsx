@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Database, Trash2, Loader2, CheckCircle2, AlertTriangle, RefreshCw, Tags, FileStack, Users, ListChecks,
 } from 'lucide-react';
@@ -10,53 +11,56 @@ import { cn } from '@/lib/utils';
 type State = 'idle' | 'loading' | 'success' | 'error';
 
 export default function AdminPage() {
+  const t = useTranslations('Admin');
   const [seedState, setSeedState] = useState<State>('idle');
   const [clearState, setClearState] = useState<State>('idle');
   const [msg, setMsg] = useState('');
 
+  const quickLinks = [
+    { href: '/admin/users', icon: Users, label: t('usersLabel'), desc: t('usersDesc') },
+    { href: '/admin/waitlist', icon: ListChecks, label: t('waitlistLabel'), desc: t('waitlistDesc') },
+    { href: '/admin/categories', icon: Tags, label: t('categoriesLabel'), desc: t('categoriesDesc') },
+    { href: '/admin/templates', icon: FileStack, label: t('templatesLabel'), desc: t('templatesDesc') },
+  ];
+
   async function handleSeed() {
-    if (!confirm('Załadować dane demonstracyjne? Zostaną dodane przykładowe konta, transakcje, podatki i zajęcia egzekucyjne.')) return;
+    if (!confirm(t('seedConfirm'))) return;
     setSeedState('loading');
     setMsg('');
     try {
       const res = await fetch('/api/admin/demo', { method: 'POST' });
       const data = await res.json();
-      if (res.ok) { setSeedState('success'); setMsg(data.message ?? 'Gotowe!'); }
-      else { setSeedState('error'); setMsg(data.error ?? 'Błąd'); }
+      if (res.ok) { setSeedState('success'); setMsg(data.message ?? t('seedDone')); }
+      else { setSeedState('error'); setMsg(data.error ?? t('seedError')); }
     } catch {
-      setSeedState('error'); setMsg('Błąd sieci');
+      setSeedState('error'); setMsg(t('networkError'));
     }
   }
 
   async function handleClear() {
-    if (!confirm('UWAGA: Usunięcie danych demo usunie też wszystkie transakcje i konta powiązane z demo. Kontynuować?')) return;
+    if (!confirm(t('clearConfirm'))) return;
     setClearState('loading');
     setMsg('');
     try {
       const res = await fetch('/api/admin/demo', { method: 'DELETE' });
       const data = await res.json();
-      if (res.ok) { setClearState('success'); setMsg(data.message ?? 'Usunięto.'); }
-      else { setClearState('error'); setMsg(data.error ?? 'Błąd'); }
+      if (res.ok) { setClearState('success'); setMsg(data.message ?? t('clearDone')); }
+      else { setClearState('error'); setMsg(data.error ?? t('seedError')); }
     } catch {
-      setClearState('error'); setMsg('Błąd sieci');
+      setClearState('error'); setMsg(t('networkError'));
     }
   }
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Panel administracyjny</h1>
-        <p className="text-sm text-muted-foreground mt-1">Narzędzia dostępne wyłącznie dla administratorów.</p>
+        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('subtitle')}</p>
       </div>
 
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {[
-          { href: '/admin/users', icon: Users, label: 'Użytkownicy', desc: 'Zarządzaj kontami, planami i dostępem' },
-          { href: '/admin/waitlist', icon: ListChecks, label: 'Waitlist', desc: 'Osoby zapisane na powiadomienie o starcie' },
-          { href: '/admin/categories', icon: Tags, label: 'Zarządzaj kategoriami', desc: 'Dodaj, edytuj i usuń kategorie transakcji' },
-          { href: '/admin/templates', icon: FileStack, label: 'Szablony budżetów', desc: 'Konfiguruj domyślne szablony budżetów' },
-        ].map(item => (
+        {quickLinks.map(item => (
           <Link key={item.href} href={item.href}
             className="bg-card border border-border rounded-xl p-4 flex items-start gap-3 hover:bg-muted/40 transition-colors">
             <div className="w-9 h-9 bg-muted rounded-lg flex items-center justify-center shrink-0">
@@ -75,11 +79,10 @@ export default function AdminPage() {
         <div className="px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Database className="w-4 h-4 text-muted-foreground" />
-            <h2 className="font-medium text-foreground">Dane demonstracyjne</h2>
+            <h2 className="font-medium text-foreground">{t('demoDataTitle')}</h2>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Załaduj realistyczne przykładowe dane, aby przetestować wszystkie funkcje aplikacji.
-            Obejmuje: 3 konta bankowe, ~20 transakcji z ostatnich 3 miesięcy, 4 podatki (w różnych statusach), 2 zajęcia egzekucyjne z historią spłat.
+            {t('demoDataDesc')}
           </p>
         </div>
 
@@ -100,9 +103,9 @@ export default function AdminPage() {
             {/* Seed */}
             <div className="border border-border rounded-lg p-4 space-y-3">
               <div>
-                <p className="text-sm font-medium text-foreground">Załaduj dane demo</p>
+                <p className="text-sm font-medium text-foreground">{t('seedCardTitle')}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tworzy przykładowe rekordy we wszystkich sekcjach aplikacji. Bezpieczna operacja — dane są oznaczone flagą demo i nie nadpiszą Twoich danych.
+                  {t('seedCardDesc')}
                 </p>
               </div>
               <button
@@ -111,16 +114,16 @@ export default function AdminPage() {
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors disabled:opacity-50"
               >
                 {seedState === 'loading' ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Ładuję...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> {t('loadingSeed')}</>
                 ) : seedState === 'success' ? (
-                  <><CheckCircle2 className="w-4 h-4" /> Załadowano</>
+                  <><CheckCircle2 className="w-4 h-4" /> {t('seeded')}</>
                 ) : (
-                  <><Database className="w-4 h-4" /> Załaduj dane demo</>
+                  <><Database className="w-4 h-4" /> {t('seedButton')}</>
                 )}
               </button>
               {seedState === 'success' && (
                 <button onClick={() => { setSeedState('idle'); setMsg(''); }} className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1">
-                  <RefreshCw className="w-3 h-3" /> Załaduj ponownie
+                  <RefreshCw className="w-3 h-3" /> {t('reload')}
                 </button>
               )}
             </div>
@@ -128,9 +131,9 @@ export default function AdminPage() {
             {/* Clear */}
             <div className="border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-3">
               <div>
-                <p className="text-sm font-medium text-red-700 dark:text-red-400">Usuń dane demo</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">{t('clearCardTitle')}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Usuwa wszystkie rekordy oznaczone jako demo: transakcje, konta demo, podatki demo, zajęcia demo. Twoje własne dane pozostają nienaruszone.
+                  {t('clearCardDesc')}
                 </p>
               </div>
               <button
@@ -139,11 +142,11 @@ export default function AdminPage() {
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {clearState === 'loading' ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Usuwam...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> {t('clearing')}</>
                 ) : clearState === 'success' ? (
-                  <><CheckCircle2 className="w-4 h-4" /> Usunięto</>
+                  <><CheckCircle2 className="w-4 h-4" /> {t('cleared')}</>
                 ) : (
-                  <><Trash2 className="w-4 h-4" /> Usuń dane demo</>
+                  <><Trash2 className="w-4 h-4" /> {t('clearButton')}</>
                 )}
               </button>
             </div>
@@ -153,10 +156,10 @@ export default function AdminPage() {
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div className="text-xs text-amber-700 dark:text-amber-400">
-                <p className="font-medium mb-1">Wymagania</p>
+                <p className="font-medium mb-1">{t('requirementsTitle')}</p>
                 <ul className="list-disc list-inside space-y-0.5 text-amber-600 dark:text-amber-500">
-                  <li>Funkcja dostępna wyłącznie dla kont z flagą <code className="bg-amber-100 dark:bg-amber-900/30 px-1 rounded">is_admin = true</code></li>
-                  <li>Ustaw flagę w tabeli <code className="bg-amber-100 dark:bg-amber-900/30 px-1 rounded">user_settings</code> ręcznie w Supabase lub przez SQL</li>
+                  <li>{t.rich('requirement1', { code: (chunks) => <code className="bg-amber-100 dark:bg-amber-900/30 px-1 rounded">{chunks}</code> })}</li>
+                  <li>{t.rich('requirement2', { code: (chunks) => <code className="bg-amber-100 dark:bg-amber-900/30 px-1 rounded">{chunks}</code> })}</li>
                 </ul>
               </div>
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Tags, Plus, Pencil, Trash2, Loader2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,12 +19,14 @@ interface Category {
   sortOrder: number;
 }
 
-const TYPE_LABELS: Record<CategoryType, string> = { income: 'Przychody', expense: 'Wydatki', obligation: 'Zobowiązania' };
 const TYPE_COLORS: Record<CategoryType, string> = { income: 'text-green-600', expense: 'text-red-500', obligation: 'text-amber-600' };
 
 const emptyForm = { name: '', type: 'expense' as CategoryType, icon: '', parentId: '' };
 
 export default function CategoriesPage() {
+  const t = useTranslations('AdminCategories');
+  const tCommon = useTranslations('Common');
+  const TYPE_LABELS: Record<CategoryType, string> = { income: t('typeIncome'), expense: t('typeExpense'), obligation: t('typeObligation') };
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -59,7 +62,7 @@ export default function CategoriesPage() {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Usunąć kategorię "${name}"?`)) return;
+    if (!confirm(t('deleteConfirm', { name }))) return;
     await fetch(`/api/categories/${id}`, { method: 'DELETE' });
     load();
   }
@@ -80,13 +83,13 @@ export default function CategoriesPage() {
             <Tags className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Zarządzanie kategoriami</h1>
-            <p className="text-sm text-muted-foreground">Dodawaj, edytuj i organizuj kategorie transakcji</p>
+            <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
           </div>
         </div>
         <button onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 transition-colors">
-          <Plus className="w-4 h-4" /> Nowa kategoria
+          <Plus className="w-4 h-4" /> {t('newCategory')}
         </button>
       </div>
 
@@ -102,7 +105,7 @@ export default function CategoriesPage() {
                 <span className="ml-auto text-xs text-muted-foreground">{roots.length + children.length}</span>
               </div>
               {roots.length === 0 && children.length === 0 ? (
-                <p className="p-4 text-sm text-muted-foreground">Brak kategorii. Kliknij "Nowa kategoria" żeby dodać.</p>
+                <p className="p-4 text-sm text-muted-foreground">{t('empty')}</p>
               ) : (
                 <div className="divide-y divide-border">
                   {roots.map(cat => {
@@ -113,14 +116,14 @@ export default function CategoriesPage() {
                           <div className="flex items-center gap-2">
                             {cat.icon && <span>{cat.icon}</span>}
                             <span className="text-sm font-medium text-foreground">{cat.name}</span>
-                            {cat.isSystem && <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">systemowa</span>}
+                            {cat.isSystem && <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">{t('systemBadge')}</span>}
                           </div>
                           <div className="flex items-center gap-1">
-                            <button onClick={() => openEdit(cat)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Edytuj">
+                            <button onClick={() => openEdit(cat)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title={t('editTooltip')}>
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
                             {!cat.isSystem && (
-                              <button onClick={() => handleDelete(cat.id, cat.name)} className="p-1.5 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors" title="Usuń">
+                              <button onClick={() => handleDelete(cat.id, cat.name)} className="p-1.5 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors" title={t('deleteTooltip')}>
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
@@ -157,45 +160,45 @@ export default function CategoriesPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="font-semibold text-foreground">{editTarget ? 'Edytuj kategorię' : 'Nowa kategoria'}</h2>
+              <h2 className="font-semibold text-foreground">{editTarget ? t('editModalTitle') : t('addModalTitle')}</h2>
               <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Nazwa *</label>
-                <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="np. Jedzenie"
+                <label className="text-xs font-medium text-muted-foreground">{t('nameLabel')}</label>
+                <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t('namePlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Typ *</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('typeLabel')}</label>
                   <select required value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as CategoryType, parentId: '' }))}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
-                    <option value="expense">Wydatki</option>
-                    <option value="income">Przychody</option>
-                    <option value="obligation">Zobowiązania</option>
+                    <option value="expense">{t('typeExpense')}</option>
+                    <option value="income">{t('typeIncome')}</option>
+                    <option value="obligation">{t('typeObligation')}</option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Emoji (ikona)</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('iconLabel')}</label>
                   <input value={form.icon} onChange={e => setForm(f => ({ ...f, icon: e.target.value }))} placeholder="🍕"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]" />
                 </div>
               </div>
               {parents.length > 0 && (
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Kategoria nadrzędna (opcjonalnie)</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('parentLabel')}</label>
                   <select value={form.parentId} onChange={e => setForm(f => ({ ...f, parentId: e.target.value }))}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#01581E]">
-                    <option value="">— brak (kategoria główna) —</option>
+                    <option value="">{t('noParent')}</option>
                     {parents.map(p => <option key={p.id} value={p.id}>{p.icon ? `${p.icon} ` : ''}{p.name}</option>)}
                   </select>
                 </div>
               )}
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">Anuluj</button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted">{tCommon('cancel')}</button>
                 <button type="submit" disabled={submitting} className="flex-1 py-2 bg-[#01581E] text-white rounded-lg text-sm font-medium hover:bg-[#01581E]/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" />{editTarget ? 'Zapisz' : 'Dodaj'}</>}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" />{editTarget ? t('saveSubmit') : t('addSubmit')}</>}
                 </button>
               </div>
             </form>

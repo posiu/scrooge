@@ -1,8 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { ListChecks, Loader2, Trash2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Locale } from '@/i18n/config';
+
+const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
 
 interface WaitlistEntry {
   id: string;
@@ -12,6 +16,8 @@ interface WaitlistEntry {
 }
 
 export default function AdminWaitlistPage() {
+  const t = useTranslations('AdminWaitlist');
+  const locale = useLocale() as Locale;
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -27,7 +33,7 @@ export default function AdminWaitlistPage() {
   useEffect(() => { load(); }, [load]);
 
   async function handleDelete(entry: WaitlistEntry) {
-    if (!confirm(`Usunąć wpis "${entry.email}" z waitlisty?`)) return;
+    if (!confirm(t('deleteConfirm', { email: entry.email }))) return;
     await fetch(`/api/admin/waitlist/${entry.id}`, { method: 'DELETE' });
     load();
   }
@@ -35,7 +41,7 @@ export default function AdminWaitlistPage() {
   async function copyEmails() {
     await navigator.clipboard.writeText(entries.map((e) => e.email).join(', '));
     setCopied(true);
-    toast.success('Adresy email skopiowane');
+    toast.success(t('copiedToast'));
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -47,8 +53,8 @@ export default function AdminWaitlistPage() {
             <ListChecks className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Waitlist</h1>
-            <p className="text-sm text-muted-foreground">Osoby zapisane na powiadomienie o publicznym starcie</p>
+            <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
           </div>
         </div>
         {entries.length > 0 && (
@@ -57,13 +63,13 @@ export default function AdminWaitlistPage() {
             className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             {copied ? <Check className="w-4 h-4 text-[#01581E]" /> : <Copy className="w-4 h-4" />}
-            Kopiuj wszystkie emaile
+            {t('copyAll')}
           </button>
         )}
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4">
-        <p className="text-xs text-muted-foreground mb-1">Łącznie zapisanych</p>
+        <p className="text-xs text-muted-foreground mb-1">{t('totalSignups')}</p>
         <p className="text-xl font-bold text-foreground">{entries.length}</p>
       </div>
 
@@ -72,8 +78,8 @@ export default function AdminWaitlistPage() {
       ) : entries.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <ListChecks className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">Waitlista jest pusta</p>
-          <p className="text-xs text-muted-foreground">Zapisy pojawią się tutaj, gdy ktoś kliknie „Powiadom mnie" na stronie głównej.</p>
+          <p className="text-sm font-medium text-foreground mb-1">{t('empty')}</p>
+          <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
         </div>
       ) : (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -88,10 +94,10 @@ export default function AdminWaitlistPage() {
                   <p className="text-xs text-muted-foreground truncate">{entry.email}</p>
                 </div>
                 <p className="text-xs text-muted-foreground shrink-0">
-                  {new Date(entry.createdAt).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  {new Date(entry.createdAt).toLocaleDateString(INTL_LOCALE[locale], { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 </p>
                 <button
-                  onClick={() => handleDelete(entry)} title="Usuń"
+                  onClick={() => handleDelete(entry)} title={t('deleteTooltip')}
                   className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-950/20 text-muted-foreground hover:text-red-600 transition-colors shrink-0"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
