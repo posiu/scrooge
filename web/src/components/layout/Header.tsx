@@ -1,4 +1,5 @@
 import { ThemeToggle } from './ThemeToggle';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { Bell } from 'lucide-react';
 
 interface HeaderProps {
@@ -13,6 +14,7 @@ export function Header({ title }: HeaderProps) {
         <button className="p-2 rounded-lg hover:bg-muted transition-colors">
           <Bell className="w-4 h-4 text-muted-foreground" />
         </button>
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
     </div>

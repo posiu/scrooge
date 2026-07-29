@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import {
@@ -14,68 +15,70 @@ import { useState } from 'react';
 import { Logo } from './Logo';
 
 interface NavItem {
-  label: string;
+  key: string;
   href?: string;
   icon: React.ElementType;
   children?: NavItem[];
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Transakcje', href: '/transactions', icon: ArrowLeftRight },
+  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { key: 'transactions', href: '/transactions', icon: ArrowLeftRight },
   {
-    label: 'Budżet',
+    key: 'budget',
     icon: CalendarDays,
     children: [
-      { label: 'Miesięczny', href: '/budget/monthly', icon: CalendarDays },
-      { label: 'Roczny', href: '/budget/yearly', icon: FileStack },
+      { key: 'budgetMonthly', href: '/budget/monthly', icon: CalendarDays },
+      { key: 'budgetYearly', href: '/budget/yearly', icon: FileStack },
     ],
   },
-  { label: 'Konta', href: '/accounts', icon: Landmark },
-  { label: 'Inwestycje', href: '/investments', icon: LineChart },
+  { key: 'accounts', href: '/accounts', icon: Landmark },
+  { key: 'investments', href: '/investments', icon: LineChart },
 ];
 
 const liabilityItems: NavItem[] = [
-  { label: 'Zobowiązania', href: '/liabilities', icon: HandCoins },
-  { label: 'Podatki', href: '/taxes', icon: Receipt },
-  { label: 'Zajęcia egzekucyjne', href: '/enforcement', icon: Gavel },
+  { key: 'liabilities', href: '/liabilities', icon: HandCoins },
+  { key: 'taxes', href: '/taxes', icon: Receipt },
+  { key: 'enforcement', href: '/enforcement', icon: Gavel },
 ];
 
 const analyticsItems: NavItem[] = [
-  { label: 'Wykresy', href: '/reports', icon: BarChart3 },
-  { label: 'Trendy', href: '/trends', icon: TrendingUp },
+  { key: 'reports', href: '/reports', icon: BarChart3 },
+  { key: 'trends', href: '/trends', icon: TrendingUp },
 ];
 
 const toolItems: NavItem[] = [
-  { label: 'AI Asystent', href: '/ai-chat', icon: Brain },
-  { label: 'Import danych', href: '/import', icon: Download },
-  { label: 'Cele oszczędnościowe', href: '/goals', icon: Target },
-  { label: 'Roadmap', href: '/roadmap', icon: Map },
+  { key: 'aiAssistant', href: '/ai-chat', icon: Brain },
+  { key: 'import', href: '/import', icon: Download },
+  { key: 'goals', href: '/goals', icon: Target },
+  { key: 'roadmap', href: '/roadmap', icon: Map },
 ];
 
 const adminItems: NavItem[] = [
-  { label: 'Użytkownicy', href: '/admin/users', icon: Users },
-  { label: 'Waitlist', href: '/admin/waitlist', icon: ListChecks },
-  { label: 'Kategorie', href: '/admin/categories', icon: Tags },
-  { label: 'Szablony budżetów', href: '/admin/templates', icon: FileStack },
-  { label: 'Panel admina', href: '/admin', icon: ShieldCheck },
-  { label: 'Ustawienia', href: '/settings', icon: Settings },
+  { key: 'adminUsers', href: '/admin/users', icon: Users },
+  { key: 'adminWaitlist', href: '/admin/waitlist', icon: ListChecks },
+  { key: 'adminCategories', href: '/admin/categories', icon: Tags },
+  { key: 'adminTemplates', href: '/admin/templates', icon: FileStack },
+  { key: 'adminPanel', href: '/admin', icon: ShieldCheck },
+  { key: 'settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | null; isAdmin?: boolean }) {
+  const t = useTranslations('Sidebar');
+  const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Budżet']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['budget']);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push('/');
   }
 
-  function toggleExpand(label: string) {
+  function toggleExpand(key: string) {
     setExpandedItems((prev) =>
-      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
   }
 
@@ -86,14 +89,15 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
 
   function renderItem(item: NavItem, depth = 0) {
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.includes(item.label);
+    const isExpanded = expandedItems.includes(item.key);
     const active = item.href ? isActive(item.href) : false;
+    const label = t(item.key);
 
     if (hasChildren) {
       return (
-        <div key={item.label}>
+        <div key={item.key}>
           <button
-            onClick={() => toggleExpand(item.label)}
+            onClick={() => toggleExpand(item.key)}
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm',
               'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent',
@@ -102,7 +106,7 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
             )}
           >
             <item.icon className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100" />
-            <span className="flex-1 text-left">{item.label}</span>
+            <span className="flex-1 text-left">{label}</span>
             <ChevronRight className={cn('w-3 h-3 opacity-50 transition-transform duration-200', isExpanded && 'rotate-90')} />
           </button>
           {isExpanded && (
@@ -130,7 +134,7 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
         )}
       >
         <item.icon className={cn('w-4 h-4 shrink-0 transition-opacity', active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100')} />
-        <span>{item.label}</span>
+        <span>{label}</span>
         {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-sidebar-primary" />}
       </Link>
     );
@@ -144,7 +148,7 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
           <Logo variant="inverted" showWordmark={false} iconClassName="w-8 h-8 shrink-0 group-hover:opacity-90 transition-opacity" />
           <div>
             <p className="text-sidebar-foreground font-semibold text-sm leading-none">Scrooge</p>
-            <p className="text-sidebar-foreground/50 text-xs mt-0.5">Domowy Controlling</p>
+            <p className="text-sidebar-foreground/50 text-xs mt-0.5">{t('tagline')}</p>
           </div>
         </Link>
       </div>
@@ -153,21 +157,21 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         {navItems.map((item) => renderItem(item))}
 
-        {/* Pasywa / Zadłużenie */}
+        {/* Liabilities / Debt */}
         <div className="pt-4 pb-1">
-          <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">Pasywa / Zadłużenie</p>
+          <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">{t('sectionLiabilities')}</p>
         </div>
         {liabilityItems.map((item) => renderItem(item))}
 
         {/* Analytics */}
         <div className="pt-4 pb-1">
-          <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">Analityka</p>
+          <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">{t('sectionAnalytics')}</p>
         </div>
         {analyticsItems.map((item) => renderItem(item))}
 
         {/* Tools */}
         <div className="pt-4 pb-1">
-          <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">Narzędzia</p>
+          <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">{t('sectionTools')}</p>
         </div>
         {toolItems.map((item) => renderItem(item))}
 
@@ -175,7 +179,7 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
         {isAdmin && (
           <>
             <div className="pt-4 pb-1">
-              <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">Zarządzanie</p>
+              <p className="px-3 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">{t('sectionAdmin')}</p>
             </div>
             {adminItems.map((item) => renderItem(item))}
           </>
@@ -191,11 +195,11 @@ export function Sidebar({ userEmail, isAdmin = false }: { userEmail?: string | n
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sidebar-foreground text-xs font-medium truncate">{userEmail ?? 'Użytkownik'}</p>
+            <p className="text-sidebar-foreground text-xs font-medium truncate">{userEmail ?? t('defaultUser')}</p>
           </div>
           <button
             onClick={handleSignOut}
-            title="Wyloguj się"
+            title={tCommon('signOut')}
             className="opacity-0 group-hover:opacity-100 transition-opacity text-sidebar-foreground/60 hover:text-sidebar-foreground"
           >
             <LogOut className="w-3.5 h-3.5" />

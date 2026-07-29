@@ -1,6 +1,10 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { userSettings } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { LOCALE_COOKIE, resolveLocale } from '@/i18n/config';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -26,19 +30,32 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
       const forwardedHost = request.headers.get('x-forwarded-host');
       const isLocalEnv = process.env.NODE_ENV === 'development';
 
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
-      } else {
-        return NextResponse.redirect(`${origin}${next}`);
+      const redirectUrl = isLocalEnv
+        ? `${origin}${next}`
+        : forwardedHost
+          ? `https://${forwardedHost}${next}`
+          : `${origin}${next}`;
+      const response = NextResponse.redirect(redirectUrl);
+
+      // Seed the locale cookie from the user's saved preference on first
+      // login on this browser — later visits/switches stay cookie-driven.
+      if (data.user && !request.cookies.get(LOCALE_COOKIE)) {
+        const settings = await db.query.userSettings.findFirst({
+          where: eq(userSettings.userId, data.user.id),
+          columns: { locale: true },
+        });
+        response.cookies.set(LOCALE_COOKIE, resolveLocale(settings?.locale), {
+          path: '/', maxAge: 31536000, sameSite: 'lax',
+        });
       }
+
+      return response;
     }
   }
 

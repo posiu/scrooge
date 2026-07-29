@@ -1,7 +1,10 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, parseISO } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { pl, enUS } from 'date-fns/locale';
+import type { Locale } from '@/i18n/config';
+
+const DATE_FNS_LOCALES = { pl, en: enUS };
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,16 +24,16 @@ export function formatCurrency(
   }).format(num);
 }
 
-export function formatDate(date: Date | string, fmt = 'd MMMM yyyy'): string {
+export function formatDate(date: Date | string, fmt = 'd MMMM yyyy', locale: Locale = 'pl'): string {
   const d = typeof date === 'string' ? parseISO(date) : date;
-  return format(d, fmt, { locale: pl });
+  return format(d, fmt, { locale: DATE_FNS_LOCALES[locale] });
 }
 
-export function formatMonth(month: string): string {
+export function formatMonth(month: string, locale: Locale = 'pl'): string {
   // month = 'YYYY-MM'
   const [year, m] = month.split('-');
   const date = new Date(parseInt(year), parseInt(m) - 1, 1);
-  return format(date, 'LLLL yyyy', { locale: pl });
+  return format(date, 'LLLL yyyy', { locale: DATE_FNS_LOCALES[locale] });
 }
 
 export function getCurrentMonth(): string {
@@ -48,19 +51,41 @@ export function getMonthsInYear(year: number): string[] {
   });
 }
 
-// Polish public holidays for a given year
-export function getPolishHolidays(year: number): Record<string, string> {
+const HOLIDAY_NAMES = {
+  pl: {
+    newYear: 'Nowy Rok', epiphany: 'Trzech Króli', laborDay: 'Święto Pracy',
+    constitutionDay: 'Święto Konstytucji 3 Maja', assumption: 'Wniebowzięcie NMP',
+    allSaints: 'Wszystkich Świętych', independenceDay: 'Święto Niepodległości',
+    christmas1: 'Boże Narodzenie (I dzień)', christmas2: 'Boże Narodzenie (II dzień)',
+    easter: 'Wielkanoc', easterMonday: 'Poniedziałek Wielkanocny',
+    pentecost: 'Zielone Świątki', corpusChristi: 'Boże Ciało',
+  },
+  en: {
+    newYear: "New Year's Day", epiphany: 'Epiphany', laborDay: 'Labour Day',
+    constitutionDay: 'Constitution Day', assumption: 'Assumption of Mary',
+    allSaints: "All Saints' Day", independenceDay: 'Independence Day',
+    christmas1: 'Christmas Day', christmas2: 'St. Stephen\'s Day',
+    easter: 'Easter Sunday', easterMonday: 'Easter Monday',
+    pentecost: 'Pentecost', corpusChristi: 'Corpus Christi',
+  },
+} as const;
+
+// Polish public holidays for a given year — the calendar itself is Poland-specific
+// regardless of UI language; only the displayed names are translated.
+export function getPolishHolidays(year: number, locale: Locale = 'pl'): Record<string, string> {
+  const n = HOLIDAY_NAMES[locale];
+
   // Fixed holidays
   const fixed: Record<string, string> = {
-    [`${year}-01-01`]: 'Nowy Rok',
-    [`${year}-01-06`]: 'Trzech Króli',
-    [`${year}-05-01`]: 'Święto Pracy',
-    [`${year}-05-03`]: 'Święto Konstytucji 3 Maja',
-    [`${year}-08-15`]: 'Wniebowzięcie NMP',
-    [`${year}-11-01`]: 'Wszystkich Świętych',
-    [`${year}-11-11`]: 'Święto Niepodległości',
-    [`${year}-12-25`]: 'Boże Narodzenie (I dzień)',
-    [`${year}-12-26`]: 'Boże Narodzenie (II dzień)',
+    [`${year}-01-01`]: n.newYear,
+    [`${year}-01-06`]: n.epiphany,
+    [`${year}-05-01`]: n.laborDay,
+    [`${year}-05-03`]: n.constitutionDay,
+    [`${year}-08-15`]: n.assumption,
+    [`${year}-11-01`]: n.allSaints,
+    [`${year}-11-11`]: n.independenceDay,
+    [`${year}-12-25`]: n.christmas1,
+    [`${year}-12-26`]: n.christmas2,
   };
 
   // Easter-dependent holidays (calculate Easter using Anonymous Gregorian algorithm)
@@ -82,10 +107,10 @@ export function getPolishHolidays(year: number): Record<string, string> {
 
   return {
     ...fixed,
-    [easterStr]: 'Wielkanoc',
-    [easterMondayStr]: 'Poniedziałek Wielkanocny',
-    [pentecostStr]: 'Zielone Świątki',
-    [corpusChristiStr]: 'Boże Ciało',
+    [easterStr]: n.easter,
+    [easterMondayStr]: n.easterMonday,
+    [pentecostStr]: n.pentecost,
+    [corpusChristiStr]: n.corpusChristi,
   };
 }
 

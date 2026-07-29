@@ -1,17 +1,22 @@
 export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
 import { transactions, budgets, liabilities, taxes, enforcementProceedings, investments } from '@/lib/db/schema';
 import { eq, and, gte, lte, isNull, sum, sql } from 'drizzle-orm';
 import { formatCurrency, formatMonth, getCurrentMonth } from '@/lib/utils';
+import type { Locale } from '@/i18n/config';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { DashboardCharts } from '@/components/charts/DashboardCharts';
 import { DashboardMonthNav } from '@/components/dashboard/DashboardMonthNav';
 import {
   TrendingUp, TrendingDown, Wallet, HandCoins, ArrowRight, CalendarDays, Receipt, Gavel, LineChart,
 } from 'lucide-react';
 import Link from 'next/link';
+
+const INTL_LOCALE: Record<Locale, string> = { pl: 'pl-PL', en: 'en-US' };
 
 async function getDashboardData(userId: string, month: string) {
   const [year, mon] = month.split('-');
@@ -100,6 +105,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const t = await getTranslations('Dashboard');
+  const locale = await getLocale() as Locale;
+
   const sp = await searchParams;
   const selectedMonth = sp.month && /^\d{4}-\d{2}$/.test(sp.month) ? sp.month : getCurrentMonth();
   const mode = (sp.mode === 'year' ? 'year' : 'month') as 'month' | 'year';
@@ -118,7 +126,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   const stats = [
     {
-      label: mode === 'year' ? `Przychody ${selectedYear}` : 'Przychody',
+      label: mode === 'year' ? t('incomeYear', { year: selectedYear }) : t('income'),
       value: formatCurrency(displayIncome),
       icon: TrendingUp,
       color: 'text-[#01581E]',
@@ -126,16 +134,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       trend: null,
     },
     {
-      label: mode === 'year' ? `Wydatki ${selectedYear}` : 'Wydatki',
+      label: mode === 'year' ? t('expenseYear', { year: selectedYear }) : t('expense'),
       value: formatCurrency(displayExpense),
       icon: TrendingDown,
       color: 'text-destructive',
       bg: 'bg-destructive/10',
-      trend: mode === 'month' && data.planned > 0 ? `${data.budgetUsed}% planu` : null,
+      trend: mode === 'month' && data.planned > 0 ? t('percentOfPlan', { percent: data.budgetUsed }) : null,
       trendColor: data.budgetUsed > 100 ? 'text-destructive' : 'text-muted-foreground',
     },
     {
-      label: mode === 'year' ? `Oszczędności ${selectedYear}` : 'Oszczędności',
+      label: mode === 'year' ? t('savingsYear', { year: selectedYear }) : t('savings'),
       value: formatCurrency(displaySavings),
       icon: Wallet,
       color: displaySavings >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-destructive',
@@ -143,21 +151,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       trend: null,
     },
     {
-      label: 'Zobowiązania',
+      label: t('liabilities'),
       value: String(data.liabilitiesCount),
-      suffix: 'aktywnych',
+      suffix: t('liabilitiesActive'),
       icon: HandCoins,
       color: 'text-amber-600 dark:text-amber-400',
       bg: 'bg-amber-500/10',
       trend: null,
     },
     {
-      label: 'Inwestycje',
+      label: t('investments'),
       value: formatCurrency(investmentsSummary.total),
       icon: LineChart,
       color: 'text-indigo-600 dark:text-indigo-400',
       bg: 'bg-indigo-500/10',
-      trend: investmentsSummary.count > 0 ? `${investmentsSummary.count} ${investmentsSummary.count === 1 ? 'pozycja' : 'pozycji'}` : null,
+      trend: investmentsSummary.count > 0 ? t('investmentsCount', { count: investmentsSummary.count }) : null,
       trendColor: 'text-muted-foreground',
     },
   ];
@@ -167,15 +175,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       {/* Header with month nav */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+          <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">
-            {mode === 'year' ? `Podsumowanie roku ${selectedYear}` : formatMonth(selectedMonth)}
+            {mode === 'year' ? t('yearSummary', { year: selectedYear }) : formatMonth(selectedMonth, locale)}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Suspense fallback={null}>
             <DashboardMonthNav currentMonth={selectedMonth} mode={mode} />
           </Suspense>
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
       </div>
@@ -213,16 +222,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-medium text-foreground">Realizacja budżetu</p>
+              <p className="text-sm font-medium text-foreground">{t('budgetProgress')}</p>
               <p className="text-xs text-muted-foreground">
-                {formatCurrency(data.expense)} z {formatCurrency(data.planned)} zaplanowanych
+                {t('budgetProgressOf', { spent: formatCurrency(data.expense), planned: formatCurrency(data.planned) })}
               </p>
             </div>
             <Link
               href={`/budget/${data.currentMonth.split('-')[0]}/${data.currentMonth.split('-')[1]}`}
               className="text-xs text-[#01581E] hover:underline flex items-center gap-1"
             >
-              Szczegóły <ArrowRight className="w-3 h-3" />
+              {t('details')} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           <div className="h-2.5 bg-muted rounded-full overflow-hidden">
@@ -235,11 +244,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             />
           </div>
           <div className="flex justify-between mt-1.5 text-xs text-muted-foreground">
-            <span>{data.budgetUsed}% wykorzystane</span>
+            <span>{t('percentUsed', { percent: data.budgetUsed })}</span>
             <span>
               {data.budgetUsed > 100
-                ? `Przekroczenie: ${formatCurrency(data.expense - data.planned)}`
-                : `Pozostało: ${formatCurrency(data.planned - data.expense)}`}
+                ? t('overBudget', { amount: formatCurrency(data.expense - data.planned) })
+                : t('remaining', { amount: formatCurrency(data.planned - data.expense) })}
             </span>
           </div>
         </div>
@@ -254,15 +263,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
                   <Receipt className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <p className="text-sm font-medium text-foreground">Podatki</p>
+                <p className="text-sm font-medium text-foreground">{t('taxes')}</p>
               </div>
               <Link href="/taxes" className="text-xs text-[#01581E] hover:underline flex items-center gap-1">
-                Szczegóły <ArrowRight className="w-3 h-3" />
+                {t('details')} <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <p className="text-xl font-bold text-foreground">{formatCurrency(obligations.taxDue)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              {obligations.taxPendingCount > 0 ? `${obligations.taxPendingCount} do zapłaty` : 'Wszystko opłacone'}
+              {obligations.taxPendingCount > 0 ? t('taxesDue', { count: obligations.taxPendingCount }) : t('taxesPaid')}
             </p>
           </div>
           <div className="bg-card border border-border rounded-xl p-5">
@@ -271,15 +280,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
                   <Gavel className="w-4 h-4 text-red-600 dark:text-red-400" />
                 </div>
-                <p className="text-sm font-medium text-foreground">Zajęcia egzekucyjne</p>
+                <p className="text-sm font-medium text-foreground">{t('enforcement')}</p>
               </div>
               <Link href="/enforcement" className="text-xs text-[#01581E] hover:underline flex items-center gap-1">
-                Szczegóły <ArrowRight className="w-3 h-3" />
+                {t('details')} <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <p className="text-xl font-bold text-foreground">{formatCurrency(obligations.enforcementRemaining)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              {obligations.enforcementPendingCount > 0 ? `${obligations.enforcementPendingCount} aktywnych` : 'Brak aktywnych zajęć'}
+              {obligations.enforcementPendingCount > 0 ? t('enforcementActive', { count: obligations.enforcementPendingCount }) : t('enforcementNone')}
             </p>
           </div>
         </div>
@@ -293,18 +302,18 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       {/* Recent transactions */}
       <div className="bg-card border border-border rounded-xl">
         <div className="flex items-center justify-between p-5 border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground">Ostatnie transakcje</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t('recentTransactions')}</h2>
           <Link
             href="/transactions"
             className="text-xs text-[#01581E] hover:underline flex items-center gap-1"
           >
-            Wszystkie <ArrowRight className="w-3 h-3" />
+            {t('all')} <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         <div className="divide-y divide-border">
           {data.recentTransactions.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Brak transakcji. Dodaj pierwszą!
+              {t('noTransactions')}
             </div>
           ) : (
             data.recentTransactions.map((tx) => (
@@ -314,7 +323,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground truncate">
-                    {tx.description ?? tx.category?.name ?? 'Brak opisu'}
+                    {tx.description ?? tx.category?.name ?? t('noDescription')}
                   </p>
                   <p className="text-xs text-muted-foreground">{tx.account?.name}</p>
                 </div>
@@ -328,7 +337,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                     {formatCurrency(tx.amount)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(tx.date).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}
+                    {new Date(tx.date).toLocaleDateString(INTL_LOCALE[locale], { day: '2-digit', month: '2-digit' })}
                   </p>
                 </div>
               </div>
@@ -340,10 +349,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       {/* Quick actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Dodaj transakcję', href: '/transactions?new=1', icon: '＋' },
-          { label: 'Budżet miesiąca', href: `/budget/${data.currentMonth.replace('-', '/')}`, icon: '📅' },
-          { label: 'Stan kont', href: '/accounts', icon: '🏦' },
-          { label: 'Zapytaj AI', href: '/ai-chat', icon: '🤖' },
+          { label: t('quickAddTransaction'), href: '/transactions?new=1', icon: '＋' },
+          { label: t('quickMonthlyBudget'), href: `/budget/${data.currentMonth.replace('-', '/')}`, icon: '📅' },
+          { label: t('quickAccounts'), href: '/accounts', icon: '🏦' },
+          { label: t('quickAskAi'), href: '/ai-chat', icon: '🤖' },
         ].map((action) => (
           <Link
             key={action.href}

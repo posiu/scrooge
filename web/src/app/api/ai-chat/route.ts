@@ -6,6 +6,7 @@ import { eq, and, isNull, gte, lte, sum, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { promises as dns } from 'dns';
 import { Agent, fetch as undiciFetch } from 'undici';
+import { LOCALE_COOKIE, resolveLocale, type Locale } from '@/i18n/config';
 
 const RequestSchema = z.object({
   messages: z.array(z.object({
@@ -74,7 +75,7 @@ async function assertSafeEndpoint(rawUrl: string): Promise<string[]> {
   return addresses.map((a) => a.address);
 }
 
-async function buildFinancialContext(userId: string): Promise<string> {
+async function buildFinancialContext(userId: string, locale: Locale): Promise<string> {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
@@ -126,7 +127,7 @@ ${recentTx.map((t) => `- ${new Date(t.date).toLocaleDateString('pl-PL')}: ${t.ty
 ZOBOWIĄZANIA AKTYWNE:
 ${activeLiabilities.length === 0 ? 'Brak' : activeLiabilities.map((l) => `- ${l.name}: pozostało ${parseFloat(l.remainingAmount).toFixed(2)} PLN${l.monthlyPayment ? `, rata: ${parseFloat(l.monthlyPayment).toFixed(2)} PLN/mies.` : ''}`).join('\n')}
 
-Odpowiadaj po polsku. Bądź konkretny, pomocny i rzeczowy. Możesz zadawać pytania doprecyzowujące.
+${locale === 'en' ? 'Respond in English.' : 'Odpowiadaj po polsku.'} Bądź konkretny, pomocny i rzeczowy. Możesz zadawać pytania doprecyzowujące.
 `.trim();
 
   return context;
@@ -142,7 +143,8 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
 
   const { messages, config } = parsed.data;
-  const systemContext = await buildFinancialContext(user.id);
+  const locale: Locale = resolveLocale(req.cookies.get(LOCALE_COOKIE)?.value);
+  const systemContext = await buildFinancialContext(user.id, locale);
 
   // Route to appropriate provider
   let responseContent: string;
